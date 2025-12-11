@@ -39,13 +39,13 @@ describe("Grid", () => {
     expect(agents).toHaveLength(3);
   });
 
-  it("renders grid with correct size", () => {
+  it("renders grid with correct size (25x25 default)", () => {
     render(
-      <Grid program={null} currentStep={0} isRunning={false} gridSize={5} />
+      <Grid program={null} currentStep={0} isRunning={false} />
     );
 
     const grid = screen.getByRole("img", { name: /robot grid/i });
-    // 5x5 grid = 25 cells at 40px each = 200px
-    expect(grid).toHaveStyle({ width: "200px", height: "200px" });
+    // 25x25 grid at 16px each = 400px (Herbert Online Judge specification)
+    expect(grid).toHaveStyle({ width: "400px", height: "400px" });
   });
 });
