@@ -37,6 +37,7 @@ yarn-error.log*
 .DS_Store
 *.pem
 
-h2lang/*
-h2lang*
-h2lang/
+# h2lang directory (submodule or external)
+/h2lang/
+docs/RULE.md
+ARCHITECTURE.md
