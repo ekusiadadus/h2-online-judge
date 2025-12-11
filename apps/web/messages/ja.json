@@ -38,18 +38,23 @@
   "playground": {
     "title": "プレイグラウンド",
     "editor": {
+      "title": "コード",
       "placeholder": "H2コードを入力してください\n例: 0: srl"
+    },
+    "grid": {
+      "title": "グリッド"
     },
     "controls": {
       "run": "実行",
-      "step": "ステップ実行",
+      "step": "ステップ",
       "reset": "リセット",
       "speed": "速度"
     },
     "output": {
       "title": "出力",
       "success": "コンパイル成功",
-      "error": "コンパイルエラー"
+      "error": "コンパイルエラー",
+      "waiting": "実行またはステップを押してコンパイル・実行してください"
     }
   },
   "footer": {

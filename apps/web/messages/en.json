@@ -38,7 +38,11 @@
   "playground": {
     "title": "Playground",
     "editor": {
+      "title": "Code",
       "placeholder": "Enter H2 code here\nExample: 0: srl"
+    },
+    "grid": {
+      "title": "Grid"
     },
     "controls": {
       "run": "Run",
@@ -49,7 +53,8 @@
     "output": {
       "title": "Output",
       "success": "Compile successful",
-      "error": "Compile error"
+      "error": "Compile error",
+      "waiting": "Press Run or Step to compile and execute"
     }
   },
   "footer": {
