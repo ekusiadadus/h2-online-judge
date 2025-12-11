@@ -16,7 +16,7 @@ import type { CompileResult, Program } from "@/lib/h2lang/types";
  * │  Control Panel                              │
  * ├─────────────────────┬───────────────────────┤
  * │                     │                       │
- * │   Code Editor       │      Grid             │
+ * │      Grid           │   Code Editor         │
  * │                     │                       │
  * ├─────────────────────┴───────────────────────┤
  * │  Output Panel                               │
@@ -130,19 +130,6 @@ export default function PlaygroundPage() {
 
       {/* Main content area */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
-        {/* Code Editor */}
-        <div className="flex flex-col min-h-0">
-          <h2 className="text-sm font-medium mb-2 text-muted-foreground">
-            {t("editor.title", { defaultValue: "Code" })}
-          </h2>
-          <CodeEditor
-            value={code}
-            onChange={setCode}
-            placeholder={t("editor.placeholder")}
-            className="flex-1"
-          />
-        </div>
-
         {/* Grid Visualization */}
         <div className="flex flex-col min-h-0">
           <h2 className="text-sm font-medium mb-2 text-muted-foreground">
@@ -152,6 +139,19 @@ export default function PlaygroundPage() {
             program={program}
             currentStep={currentStep}
             isRunning={isRunning}
+            className="flex-1"
+          />
+        </div>
+
+        {/* Code Editor */}
+        <div className="flex flex-col min-h-0">
+          <h2 className="text-sm font-medium mb-2 text-muted-foreground">
+            {t("editor.title", { defaultValue: "Code" })}
+          </h2>
+          <CodeEditor
+            value={code}
+            onChange={setCode}
+            placeholder={t("editor.placeholder")}
             className="flex-1"
           />
         </div>

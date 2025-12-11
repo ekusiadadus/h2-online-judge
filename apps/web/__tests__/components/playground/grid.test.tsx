@@ -45,7 +45,7 @@ describe("Grid", () => {
     );
 
     const grid = screen.getByRole("img", { name: /robot grid/i });
-    // 25x25 grid at 16px each = 400px (Herbert Online Judge specification)
-    expect(grid).toHaveStyle({ width: "400px", height: "400px" });
+    // 25x25 grid at 24px each = 600px (Herbert Online Judge specification)
+    expect(grid).toHaveStyle({ width: "600px", height: "600px" });
   });
 });

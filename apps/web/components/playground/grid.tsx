@@ -21,8 +21,8 @@ interface AgentState {
 
 /** Herbert Online Judge specification: 25x25 grid */
 const GRID_SIZE = 25;
-/** Cell size in pixels (25 * 16 = 400px total) */
-const CELL_SIZE = 16;
+/** Cell size in pixels (25 * 24 = 600px total) */
+const CELL_SIZE = 24;
 
 /**
  * Grid visualization component for H2 robot simulation.
@@ -140,18 +140,18 @@ export function Grid({
               getAgentColor(agent.id)
             )}
             style={{
-              left: agent.x * CELL_SIZE + 2,
-              top: agent.y * CELL_SIZE + 2,
-              width: CELL_SIZE - 4,
-              height: CELL_SIZE - 4,
+              left: agent.x * CELL_SIZE + 3,
+              top: agent.y * CELL_SIZE + 3,
+              width: CELL_SIZE - 6,
+              height: CELL_SIZE - 6,
               borderRadius: "50%",
               ...getRotationStyle(agent.direction),
             }}
           >
             {/* Direction indicator (arrow) */}
             <div
-              className="w-0 h-0 border-l-[3px] border-r-[3px] border-b-[5px] border-l-transparent border-r-transparent border-b-white"
-              style={{ marginTop: "-2px" }}
+              className="w-0 h-0 border-l-[4px] border-r-[4px] border-b-[7px] border-l-transparent border-r-transparent border-b-white"
+              style={{ marginTop: "-3px" }}
             />
           </div>
         ))}
