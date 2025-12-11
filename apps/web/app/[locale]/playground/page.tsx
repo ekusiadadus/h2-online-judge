@@ -117,7 +117,7 @@ export default function PlaygroundPage() {
     compileResult?.status === "success" ? compileResult.program : null;
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col p-4 gap-4">
+    <div className="flex flex-col p-4 gap-4">
       {/* Control Panel */}
       <ControlPanel
         onRun={handleRun}
@@ -129,9 +129,9 @@ export default function PlaygroundPage() {
       />
 
       {/* Main content area */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Grid Visualization */}
-        <div className="flex flex-col min-h-0">
+        <div className="flex flex-col">
           <h2 className="text-sm font-medium mb-2 text-muted-foreground">
             {t("grid.title", { defaultValue: "Grid" })}
           </h2>
@@ -139,12 +139,11 @@ export default function PlaygroundPage() {
             program={program}
             currentStep={currentStep}
             isRunning={isRunning}
-            className="flex-1"
           />
         </div>
 
         {/* Code Editor */}
-        <div className="flex flex-col min-h-0">
+        <div className="flex flex-col">
           <h2 className="text-sm font-medium mb-2 text-muted-foreground">
             {t("editor.title", { defaultValue: "Code" })}
           </h2>
@@ -152,7 +151,7 @@ export default function PlaygroundPage() {
             value={code}
             onChange={setCode}
             placeholder={t("editor.placeholder")}
-            className="flex-1"
+            className="min-h-[632px]"
           />
         </div>
       </div>

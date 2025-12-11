@@ -100,7 +100,7 @@ export function Grid({
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-card p-4 overflow-auto",
+        "rounded-lg border border-border bg-card p-4",
         className
       )}
     >
