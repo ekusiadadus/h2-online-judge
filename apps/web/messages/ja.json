@@ -1,0 +1,58 @@
+{
+  "common": {
+    "title": "Herbert Online Judge",
+    "description": "H2言語を使ってロボットをプログラムしよう",
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "retry": "再試行"
+  },
+  "nav": {
+    "home": "ホーム",
+    "playground": "プレイグラウンド",
+    "problems": "問題一覧",
+    "about": "このサイトについて"
+  },
+  "home": {
+    "hero": {
+      "title": "Herbert Online Judge",
+      "subtitle": "H2言語でロボットをプログラミング",
+      "description": "シンプルなコマンドでロボットを動かし、プログラミングの基礎を学ぼう",
+      "cta": "プレイグラウンドを開く"
+    },
+    "features": {
+      "title": "特徴",
+      "visual": {
+        "title": "ビジュアルプログラミング",
+        "description": "コードの実行結果をリアルタイムで確認"
+      },
+      "simple": {
+        "title": "シンプルな言語",
+        "description": "s(前進)、r(右回転)、l(左回転)の3つの基本コマンド"
+      },
+      "multiAgent": {
+        "title": "マルチエージェント",
+        "description": "複数のロボットを同時に制御"
+      }
+    }
+  },
+  "playground": {
+    "title": "プレイグラウンド",
+    "editor": {
+      "placeholder": "H2コードを入力してください\n例: 0: srl"
+    },
+    "controls": {
+      "run": "実行",
+      "step": "ステップ実行",
+      "reset": "リセット",
+      "speed": "速度"
+    },
+    "output": {
+      "title": "出力",
+      "success": "コンパイル成功",
+      "error": "コンパイルエラー"
+    }
+  },
+  "footer": {
+    "copyright": "© 2024 Herbert Online Judge"
+  }
+}

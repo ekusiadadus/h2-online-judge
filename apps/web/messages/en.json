@@ -1,0 +1,58 @@
+{
+  "common": {
+    "title": "Herbert Online Judge",
+    "description": "Program robots using H2 language",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry"
+  },
+  "nav": {
+    "home": "Home",
+    "playground": "Playground",
+    "problems": "Problems",
+    "about": "About"
+  },
+  "home": {
+    "hero": {
+      "title": "Herbert Online Judge",
+      "subtitle": "Program robots with H2 language",
+      "description": "Move robots with simple commands and learn the basics of programming",
+      "cta": "Open Playground"
+    },
+    "features": {
+      "title": "Features",
+      "visual": {
+        "title": "Visual Programming",
+        "description": "See code execution results in real-time"
+      },
+      "simple": {
+        "title": "Simple Language",
+        "description": "Three basic commands: s(forward), r(right), l(left)"
+      },
+      "multiAgent": {
+        "title": "Multi-Agent",
+        "description": "Control multiple robots simultaneously"
+      }
+    }
+  },
+  "playground": {
+    "title": "Playground",
+    "editor": {
+      "placeholder": "Enter H2 code here\nExample: 0: srl"
+    },
+    "controls": {
+      "run": "Run",
+      "step": "Step",
+      "reset": "Reset",
+      "speed": "Speed"
+    },
+    "output": {
+      "title": "Output",
+      "success": "Compile successful",
+      "error": "Compile error"
+    }
+  },
+  "footer": {
+    "copyright": "© 2024 Herbert Online Judge"
+  }
+}
