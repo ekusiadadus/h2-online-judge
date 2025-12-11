@@ -50,7 +50,7 @@ describe("Header", () => {
   it("renders the logo/brand name", () => {
     render(<Header />);
 
-    expect(screen.getByText("Herbert")).toBeInTheDocument();
+    expect(screen.getByText("H2")).toBeInTheDocument();
   });
 
   it("renders navigation links", () => {
@@ -98,7 +98,7 @@ describe("Header accessibility", () => {
   it("has accessible brand link", () => {
     render(<Header />);
 
-    const brandLink = screen.getByRole("link", { name: /herbert/i });
+    const brandLink = screen.getByRole("link", { name: /h2/i });
     expect(brandLink).toBeInTheDocument();
   });
 });

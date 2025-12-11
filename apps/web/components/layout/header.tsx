@@ -36,7 +36,7 @@ export function Header() {
       <div className="container mx-auto flex h-14 items-center px-4">
         {/* Logo */}
         <Link href="/" className="mr-6 flex items-center space-x-2">
-          <span className="text-xl font-bold text-primary">Herbert</span>
+          <span className="text-xl font-bold text-primary">H2</span>
         </Link>
 
         {/* Navigation */}

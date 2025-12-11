@@ -1,6 +1,6 @@
 {
   "common": {
-    "title": "Herbert Online Judge",
+    "title": "H2 Online Judge",
     "description": "H2言語を使ってロボットをプログラムしよう",
     "loading": "読み込み中...",
     "error": "エラーが発生しました",
@@ -14,7 +14,7 @@
   },
   "home": {
     "hero": {
-      "title": "Herbert Online Judge",
+      "title": "H2 Online Judge",
       "subtitle": "H2言語でロボットをプログラミング",
       "description": "シンプルなコマンドでロボットを動かし、プログラミングの基礎を学ぼう",
       "cta": "プレイグラウンドを開く"

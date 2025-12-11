@@ -1,6 +1,6 @@
 {
   "common": {
-    "title": "Herbert Online Judge",
+    "title": "H2 Online Judge",
     "description": "Program robots using H2 language",
     "loading": "Loading...",
     "error": "An error occurred",
@@ -14,7 +14,7 @@
   },
   "home": {
     "hero": {
-      "title": "Herbert Online Judge",
+      "title": "H2 Online Judge",
       "subtitle": "Program robots with H2 language",
       "description": "Move robots with simple commands and learn the basics of programming",
       "cta": "Open Playground"

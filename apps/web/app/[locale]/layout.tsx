@@ -18,7 +18,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Herbert Online Judge",
+  title: "H2 Online Judge",
   description: "Program robots using H2 language",
 };
 
