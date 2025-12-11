@@ -30,8 +30,8 @@ export default function PlaygroundPage() {
   const [wasmReady, setWasmReady] = useState(false);
   const [wasmError, setWasmError] = useState<string | null>(null);
 
-  // Code state (h2lang 0.1.0 requires agent ID prefix)
-  const [code, setCode] = useState("0: srl");
+  // Code state (single agent can omit "0:" prefix in h2lang v0.2.0+)
+  const [code, setCode] = useState("srl");
 
   // Compilation state
   const [compileResult, setCompileResult] = useState<CompileResult | null>(

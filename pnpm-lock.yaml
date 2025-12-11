@@ -70,8 +70,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       h2lang:
-        specifier: ^0.1.0
-        version: 0.1.0
+        specifier: ^0.2.0
+        version: 0.2.0
       lucide-react:
         specifier: ^0.468.0
         version: 0.468.0(react@19.2.0)
@@ -1717,8 +1717,8 @@ packages:
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
-  h2lang@0.1.0:
-    resolution: {integrity: sha512-WjIOYc/rKw0tOGu6QlHZdNpmGUbWzddhWEm2FbhfHOQQnBbxHmC6VBF02ZoCKp2mBwQ6HZJC44WAupJtLP2GAg==}
+  h2lang@0.2.0:
+    resolution: {integrity: sha512-wmibH+d3/k9ZXJUBlxgvO9AU2lNRXQmWcvJVjzlSx652fINlTn4uTromcmjjug2wJaOFWwqcGc98KjmCzpGZeA==}
 
   has-bigints@1.1.0:
     resolution: {integrity: sha512-R3pbpkcIqv2Pm3dUwgjclDRVmWpTJW2DcMzcIhEXEx1oh/CEMObMm3KLmRJOdvhM7o4uQBnwr8pzRK2sJWIqfg==}
@@ -4262,7 +4262,7 @@ snapshots:
 
   graphemer@1.4.0: {}
 
-  h2lang@0.1.0: {}
+  h2lang@0.2.0: {}
 
   has-bigints@1.1.0: {}
 
