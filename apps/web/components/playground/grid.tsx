@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import type { Program } from "@/lib/h2lang/types";
+import type { Program, Problem, Position } from "@/lib/h2lang/types";
 
 interface GridProps {
   program: Program | null;
@@ -10,6 +10,14 @@ interface GridProps {
   isRunning: boolean;
   gridSize?: number;
   className?: string;
+  /** Problem definition with goals, walls, traps */
+  problem?: Problem;
+  /** List of goals that have been visited */
+  visitedGoals?: Position[];
+  /** Enable edit mode for placing elements */
+  editMode?: boolean;
+  /** Callback when a cell is clicked in edit mode */
+  onCellClick?: (x: number, y: number) => void;
 }
 
 interface AgentState {
@@ -25,9 +33,17 @@ const GRID_SIZE = 25;
 const CELL_SIZE = 24;
 
 /**
+ * Check if a position is in a list of positions.
+ */
+function hasPosition(positions: Position[], x: number, y: number): boolean {
+  return positions.some((p) => p.x === x && p.y === y);
+}
+
+/**
  * Grid visualization component for H2 robot simulation.
  *
  * Displays a grid with agents moving according to the compiled program.
+ * Supports Herbert-style problems with goals, walls, and traps.
  */
 export function Grid({
   program,
@@ -35,19 +51,38 @@ export function Grid({
   isRunning,
   gridSize = GRID_SIZE,
   className,
+  problem,
+  visitedGoals = [],
+  editMode = false,
+  onCellClick,
 }: GridProps) {
+  // Get start position from problem or default to center
+  const startPosition = problem?.startPosition ?? {
+    x: Math.floor(gridSize / 2),
+    y: Math.floor(gridSize / 2),
+    direction: 0,
+  };
+
+  // Get walls for collision detection
+  const walls = problem?.walls ?? [];
+
   // Calculate agent states based on program and current step
   const agentStates = useMemo(() => {
     if (!program) {
-      return [{ id: 0, x: Math.floor(gridSize / 2), y: Math.floor(gridSize / 2), direction: 0 }];
+      return [{
+        id: 0,
+        x: startPosition.x,
+        y: startPosition.y,
+        direction: startPosition.direction,
+      }];
     }
 
-    // Initialize agents at center
+    // Initialize agents at start position
     const states: AgentState[] = program.agents.map((agent) => ({
       id: agent.id,
-      x: Math.floor(gridSize / 2),
-      y: Math.floor(gridSize / 2),
-      direction: 0,
+      x: startPosition.x,
+      y: startPosition.y,
+      direction: startPosition.direction,
     }));
 
     // Apply commands up to current step
@@ -59,11 +94,25 @@ export function Grid({
 
         const command = agentCommand.command;
         if (command.type === "straight") {
-          // Move forward in current direction
+          // Calculate next position
           const dx = Math.round(Math.sin((state.direction * Math.PI) / 180));
           const dy = -Math.round(Math.cos((state.direction * Math.PI) / 180));
-          state.x = Math.max(0, Math.min(gridSize - 1, state.x + dx));
-          state.y = Math.max(0, Math.min(gridSize - 1, state.y + dy));
+          const nextX = state.x + dx;
+          const nextY = state.y + dy;
+
+          // Check bounds
+          if (nextX < 0 || nextX >= gridSize || nextY < 0 || nextY >= gridSize) {
+            continue; // Cannot move outside grid
+          }
+
+          // Check wall collision
+          if (hasPosition(walls, nextX, nextY)) {
+            continue; // Cannot move into wall
+          }
+
+          // Move forward
+          state.x = nextX;
+          state.y = nextY;
         } else if (command.type === "rotate_right") {
           state.direction = (state.direction + 90) % 360;
         } else if (command.type === "rotate_left") {
@@ -73,7 +122,7 @@ export function Grid({
     }
 
     return states;
-  }, [program, currentStep, gridSize]);
+  }, [program, currentStep, gridSize, startPosition, walls]);
 
   // Get agent color class
   const getAgentColor = (id: number) => {
@@ -96,6 +145,13 @@ export function Grid({
   const getRotationStyle = (direction: number) => ({
     transform: `rotate(${direction}deg)`,
   });
+
+  // Handle cell click
+  const handleCellClick = (x: number, y: number) => {
+    if (editMode && onCellClick) {
+      onCellClick(x, y);
+    }
+  };
 
   return (
     <div
@@ -120,12 +176,75 @@ export function Grid({
           return (
             <div
               key={`${x}-${y}`}
-              className="absolute border border-grid-line bg-background"
+              data-testid="grid-cell"
+              className={cn(
+                "absolute border border-grid-line bg-background",
+                editMode && "cursor-pointer hover:bg-muted"
+              )}
               style={{
                 left: x * CELL_SIZE,
                 top: y * CELL_SIZE,
                 width: CELL_SIZE,
                 height: CELL_SIZE,
+              }}
+              onClick={() => handleCellClick(x, y)}
+            />
+          );
+        })}
+
+        {/* Walls (black blocks) */}
+        {problem?.walls.map((wall, index) => (
+          <div
+            key={`wall-${index}`}
+            data-testid="wall"
+            className="absolute"
+            style={{
+              left: wall.x * CELL_SIZE + 2,
+              top: wall.y * CELL_SIZE + 2,
+              width: CELL_SIZE - 4,
+              height: CELL_SIZE - 4,
+              zIndex: 10,
+              backgroundColor: "#1f2937",
+            }}
+          />
+        ))}
+
+        {/* Traps (gray circles) */}
+        {problem?.traps.map((trap, index) => (
+          <div
+            key={`trap-${index}`}
+            data-testid="trap"
+            className="absolute rounded-full"
+            style={{
+              left: trap.x * CELL_SIZE + 4,
+              top: trap.y * CELL_SIZE + 4,
+              width: CELL_SIZE - 8,
+              height: CELL_SIZE - 8,
+              zIndex: 10,
+              backgroundColor: "#9ca3af",
+            }}
+          />
+        ))}
+
+        {/* Goals (white/green circles) */}
+        {problem?.goals.map((goal, index) => {
+          const isVisited = hasPosition(visitedGoals, goal.x, goal.y);
+          return (
+            <div
+              key={`goal-${index}`}
+              data-testid={isVisited ? "goal-visited" : "goal"}
+              className={cn(
+                "absolute rounded-full border-2",
+                isVisited
+                  ? "bg-green-500 border-green-600"
+                  : "bg-white border-gray-300"
+              )}
+              style={{
+                left: goal.x * CELL_SIZE + 5,
+                top: goal.y * CELL_SIZE + 5,
+                width: CELL_SIZE - 10,
+                height: CELL_SIZE - 10,
+                zIndex: 15,
               }}
             />
           );
@@ -145,6 +264,7 @@ export function Grid({
               width: CELL_SIZE - 6,
               height: CELL_SIZE - 6,
               borderRadius: "50%",
+              zIndex: 20,
               ...getRotationStyle(agent.direction),
             }}
           >

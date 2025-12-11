@@ -4,6 +4,35 @@
  * Type definitions for the h2lang WebAssembly module output.
  */
 
+/** Position on the grid */
+export interface Position {
+  x: number;
+  y: number;
+}
+
+/** Direction in degrees (0: up, 90: right, 180: down, 270: left) */
+export type Direction = 0 | 90 | 180 | 270;
+
+/** Start position with direction */
+export interface StartPosition extends Position {
+  direction: Direction;
+}
+
+/**
+ * Problem definition for Herbert-style puzzles.
+ *
+ * - goals: White circles that must be stepped on
+ * - walls: Black blocks that cannot be passed through
+ * - traps: Gray circles that reset all visited goals
+ * - startPosition: Initial robot position and direction
+ */
+export interface Problem {
+  goals: Position[];
+  walls: Position[];
+  traps: Position[];
+  startPosition: StartPosition;
+}
+
 /** Command types that an agent can execute */
 export type CommandType = "straight" | "rotate_right" | "rotate_left";
 
