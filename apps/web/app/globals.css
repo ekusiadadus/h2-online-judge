@@ -18,8 +18,8 @@
   --primary-foreground: 0 0% 100%;
 
   /* ===== Background System ===== */
-  /* Page background - Slightly lighter than the provided light color */
-  --background: 207 45% 98%;
+  /* Page background - Pure white */
+  --background: 0 0% 100%;
   /* Main text - Softened black with blue undertone */
   --foreground: 207 25% 8%;
 

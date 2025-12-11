@@ -15,6 +15,7 @@ export default async function HomePage({ params }: Props) {
 
 function HomeContent() {
   const t = useTranslations("home");
+  const tFooter = useTranslations("footer");
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -63,7 +64,7 @@ function HomeContent() {
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; 2024 Herbert Online Judge</p>
+          <p>{tFooter("copyright")}</p>
         </div>
       </footer>
     </div>
