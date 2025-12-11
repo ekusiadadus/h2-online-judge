@@ -242,18 +242,14 @@ export default function PlaygroundPage() {
     // Exit edit mode when running
     setEditMode(false);
 
-    let result = compileResult;
-
-    // Compile if not already compiled or if there are errors
-    if (!result || result.status !== "success") {
-      result = handleCompile();
-    }
+    // Always recompile to ensure we have the latest code
+    const result = handleCompile();
 
     if (result?.status === "success") {
       setCurrentStep(0);
       setIsRunning(true);
     }
-  }, [compileResult, handleCompile]);
+  }, [handleCompile]);
 
   // Handle step
   const handleStep = useCallback(() => {
@@ -263,21 +259,17 @@ export default function PlaygroundPage() {
     // Stop auto-run if running
     setIsRunning(false);
 
-    let result = compileResult;
-
-    // Compile if not already compiled
+    // Always recompile to ensure we have the latest code
+    const result = handleCompile();
     if (!result || result.status !== "success") {
-      result = handleCompile();
-      if (!result || result.status !== "success") {
-        return;
-      }
+      return;
     }
 
     const program = result.program;
     if (currentStep < program.max_steps) {
       setCurrentStep((prev) => prev + 1);
     }
-  }, [compileResult, currentStep, handleCompile]);
+  }, [currentStep, handleCompile]);
 
   // Handle reset
   const handleReset = useCallback(() => {
@@ -431,7 +423,7 @@ export default function PlaygroundPage() {
             {t("grid.title", { defaultValue: "Grid" })}
             {editMode && (
               <span className="ml-2 text-xs text-primary">
-                (Edit Mode)
+                {t("grid.editModeLabel", { defaultValue: "(Edit Mode)" })}
               </span>
             )}
           </h2>

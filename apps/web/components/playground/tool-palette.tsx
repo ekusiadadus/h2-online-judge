@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Circle, Square, AlertTriangle, Eraser, Move } from "lucide-react";
 
@@ -66,12 +67,14 @@ export function ToolPalette({
   onEditModeToggle,
   className,
 }: ToolPaletteProps) {
-  const tools: { type: ToolType; icon: React.ReactNode; label: string }[] = [
-    { type: "goal", icon: <Circle className="h-5 w-5" />, label: "Goal" },
-    { type: "wall", icon: <Square className="h-5 w-5" />, label: "Wall" },
-    { type: "trap", icon: <AlertTriangle className="h-5 w-5" />, label: "Trap" },
-    { type: "start", icon: <Move className="h-5 w-5" />, label: "Start" },
-    { type: "erase", icon: <Eraser className="h-5 w-5" />, label: "Erase" },
+  const t = useTranslations("playground.toolPalette");
+
+  const tools: { type: ToolType; icon: React.ReactNode; labelKey: string }[] = [
+    { type: "goal", icon: <Circle className="h-5 w-5" />, labelKey: "goal" },
+    { type: "wall", icon: <Square className="h-5 w-5" />, labelKey: "wall" },
+    { type: "trap", icon: <AlertTriangle className="h-5 w-5" />, labelKey: "trap" },
+    { type: "start", icon: <Move className="h-5 w-5" />, labelKey: "start" },
+    { type: "erase", icon: <Eraser className="h-5 w-5" />, labelKey: "erase" },
   ];
 
   return (
@@ -87,7 +90,7 @@ export function ToolPalette({
             : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
         )}
       >
-        {editMode ? "Exit Edit" : "Edit Mode"}
+        {editMode ? t("exitEdit") : t("editMode")}
       </button>
 
       {/* Separator */}
@@ -101,7 +104,7 @@ export function ToolPalette({
               key={tool.type}
               tool={tool.type}
               icon={tool.icon}
-              label={tool.label}
+              label={t(tool.labelKey)}
               selected={selectedTool === tool.type}
               onClick={() => onToolSelect(tool.type)}
             />

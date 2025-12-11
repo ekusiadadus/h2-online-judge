@@ -42,7 +42,17 @@
       "placeholder": "Enter H2 code here\nExample: 0: srl"
     },
     "grid": {
-      "title": "Grid"
+      "title": "Grid",
+      "editModeLabel": "(Edit Mode)"
+    },
+    "toolPalette": {
+      "editMode": "Edit Mode",
+      "exitEdit": "Exit Edit",
+      "goal": "Goal",
+      "wall": "Wall",
+      "trap": "Trap",
+      "start": "Start",
+      "erase": "Erase"
     },
     "controls": {
       "run": "Run",

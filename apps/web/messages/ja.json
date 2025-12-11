@@ -42,7 +42,17 @@
       "placeholder": "H2コードを入力してください\n例: 0: srl"
     },
     "grid": {
-      "title": "グリッド"
+      "title": "グリッド",
+      "editModeLabel": "(編集モード)"
+    },
+    "toolPalette": {
+      "editMode": "編集モード",
+      "exitEdit": "編集終了",
+      "goal": "ゴール",
+      "wall": "壁",
+      "trap": "トラップ",
+      "start": "スタート",
+      "erase": "消去"
     },
     "controls": {
       "run": "実行",
