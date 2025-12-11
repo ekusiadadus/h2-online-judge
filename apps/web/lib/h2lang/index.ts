@@ -15,13 +15,13 @@ import type {
 export type * from "./types";
 
 // WASM module state
-let wasmModule: {
-  compile: (source: string) => string;
-  validate: (source: string) => string;
-  version: () => string;
-} | null = null;
-
+let wasmInitialized = false;
 let initPromise: Promise<void> | null = null;
+
+// Dynamic import references
+let h2langCompile: ((source: string) => CompileResult) | null = null;
+let h2langValidate: ((source: string) => ValidationResult) | null = null;
+let h2langVersion: (() => string) | null = null;
 
 /**
  * Initialize the h2lang WebAssembly module.
@@ -29,7 +29,7 @@ let initPromise: Promise<void> | null = null;
  * Multiple calls are safe - initialization only happens once.
  */
 export async function initH2Lang(): Promise<void> {
-  if (wasmModule) return;
+  if (wasmInitialized) return;
 
   if (initPromise) {
     return initPromise;
@@ -38,15 +38,20 @@ export async function initH2Lang(): Promise<void> {
   initPromise = (async () => {
     try {
       // Dynamic import of the WASM module
-      // The actual path will depend on how h2lang is packaged
       const h2lang = await import("h2lang");
+
+      // Initialize the WASM module
       await h2lang.default();
 
-      wasmModule = {
-        compile: h2lang.compile,
-        validate: h2lang.validate,
-        version: h2lang.version,
-      };
+      // Initialize panic hook for better error messages
+      h2lang.init();
+
+      // Store references to the functions
+      h2langCompile = h2lang.compile;
+      h2langValidate = h2lang.validate;
+      h2langVersion = h2lang.version;
+
+      wasmInitialized = true;
     } catch (error) {
       console.error("Failed to initialize h2lang WASM module:", error);
       throw new Error("Failed to initialize H2 language compiler");
@@ -60,7 +65,7 @@ export async function initH2Lang(): Promise<void> {
  * Check if the h2lang module is initialized.
  */
 export function isInitialized(): boolean {
-  return wasmModule !== null;
+  return wasmInitialized;
 }
 
 /**
@@ -73,22 +78,21 @@ export function isInitialized(): boolean {
  * @example
  * ```ts
  * await initH2Lang();
- * const result = compile("0: srl");
+ * const result = compile("srl");
  * if (result.status === "success") {
  *   console.log(result.program.agents);
  * }
  * ```
  */
 export function compile(source: string): CompileResult {
-  if (!wasmModule) {
+  if (!wasmInitialized || !h2langCompile) {
     throw new Error(
       "H2Lang module not initialized. Call initH2Lang() first."
     );
   }
 
   try {
-    const resultJson = wasmModule.compile(source);
-    return JSON.parse(resultJson) as CompileResult;
+    return h2langCompile(source) as CompileResult;
   } catch (error) {
     // Handle unexpected errors from the WASM module
     return {
@@ -115,20 +119,29 @@ export function compile(source: string): CompileResult {
  * @example
  * ```ts
  * await initH2Lang();
- * const result = validate("0: srl");
+ * const result = validate("srl");
  * console.log(result.valid); // true
  * ```
  */
 export function validate(source: string): ValidationResult {
-  if (!wasmModule) {
+  if (!wasmInitialized || !h2langValidate) {
     throw new Error(
       "H2Lang module not initialized. Call initH2Lang() first."
     );
   }
 
   try {
-    const resultJson = wasmModule.validate(source);
-    return JSON.parse(resultJson) as ValidationResult;
+    const result = h2langValidate(source) as { status: string; valid?: boolean; errors?: Array<{ line: number; column: number; message: string }> };
+
+    // Convert h2lang response to ValidationResult
+    if (result.status === "ok") {
+      return { valid: true };
+    } else {
+      return {
+        valid: false,
+        errors: result.errors || [],
+      };
+    }
   } catch (error) {
     return {
       valid: false,
@@ -151,13 +164,13 @@ export function validate(source: string): ValidationResult {
  * @throws Error if the module is not initialized
  */
 export function version(): string {
-  if (!wasmModule) {
+  if (!wasmInitialized || !h2langVersion) {
     throw new Error(
       "H2Lang module not initialized. Call initH2Lang() first."
     );
   }
 
-  return wasmModule.version();
+  return h2langVersion();
 }
 
 /**
