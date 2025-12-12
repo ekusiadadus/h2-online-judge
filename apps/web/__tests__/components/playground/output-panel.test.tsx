@@ -218,4 +218,96 @@ describe("OutputPanel", () => {
       expect(progressBar).toHaveAttribute("aria-valuemax", "10");
     });
   });
+
+  describe("Points Display", () => {
+    it("displays points when totalGoals is provided", () => {
+      const result: CompileResult = {
+        status: "success",
+        program: {
+          agents: [{ id: 0, commands: [] }],
+          max_steps: 5,
+          timeline: [],
+        },
+      };
+
+      render(
+        <OutputPanel
+          compileResult={result}
+          currentStep={3}
+          visitedGoals={2}
+          totalGoals={5}
+        />
+      );
+
+      // Check for Points display
+      expect(screen.getByText(/Points:/)).toBeInTheDocument();
+    });
+
+    it("shows success message when all goals are visited at end", () => {
+      const result: CompileResult = {
+        status: "success",
+        program: {
+          agents: [{ id: 0, commands: [] }],
+          max_steps: 5,
+          timeline: [],
+        },
+      };
+
+      render(
+        <OutputPanel
+          compileResult={result}
+          currentStep={5}
+          visitedGoals={3}
+          totalGoals={3}
+        />
+      );
+
+      expect(screen.getByTestId("result-success")).toBeInTheDocument();
+    });
+
+    it("shows failure message when not all goals visited at end", () => {
+      const result: CompileResult = {
+        status: "success",
+        program: {
+          agents: [{ id: 0, commands: [] }],
+          max_steps: 5,
+          timeline: [],
+        },
+      };
+
+      render(
+        <OutputPanel
+          compileResult={result}
+          currentStep={5}
+          visitedGoals={2}
+          totalGoals={5}
+        />
+      );
+
+      expect(screen.getByTestId("result-failure")).toBeInTheDocument();
+    });
+
+    it("does not show result message when execution is not complete", () => {
+      const result: CompileResult = {
+        status: "success",
+        program: {
+          agents: [{ id: 0, commands: [] }],
+          max_steps: 5,
+          timeline: [],
+        },
+      };
+
+      render(
+        <OutputPanel
+          compileResult={result}
+          currentStep={3}
+          visitedGoals={2}
+          totalGoals={5}
+        />
+      );
+
+      expect(screen.queryByTestId("result-success")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("result-failure")).not.toBeInTheDocument();
+    });
+  });
 });

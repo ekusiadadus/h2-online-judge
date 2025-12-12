@@ -453,7 +453,7 @@ export default function PlaygroundPage() {
             value={code}
             onChange={setCode}
             placeholder={t("editor.placeholder")}
-            className="min-h-[400px]"
+            className="h-full min-h-[600px]"
             disabled={!wasmReady}
           />
         </div>
@@ -467,6 +467,8 @@ export default function PlaygroundPage() {
             compileResult={compileResult}
             currentStep={currentStep}
             className="h-full"
+            visitedGoals={visitedGoals.length}
+            totalGoals={problem.goals.length}
           />
         </div>
       </div>

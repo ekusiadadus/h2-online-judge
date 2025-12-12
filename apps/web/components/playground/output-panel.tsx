@@ -3,12 +3,24 @@
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import type { CompileResult, CommandType } from "@/lib/h2lang/types";
-import { CheckCircle, XCircle, ArrowUp, RotateCw, RotateCcw } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  ArrowUp,
+  RotateCw,
+  RotateCcw,
+  Trophy,
+  AlertTriangle,
+} from "lucide-react";
 
 interface OutputPanelProps {
   compileResult: CompileResult | null;
   currentStep: number;
   className?: string;
+  /** Number of goals visited */
+  visitedGoals?: number;
+  /** Total number of goals */
+  totalGoals?: number;
 }
 
 /**
@@ -50,6 +62,8 @@ export function OutputPanel({
   compileResult,
   currentStep,
   className,
+  visitedGoals = 0,
+  totalGoals = 0,
 }: OutputPanelProps) {
   const t = useTranslations("playground.output");
 
@@ -59,6 +73,11 @@ export function OutputPanel({
   const program = isSuccess ? compileResult.program : null;
   const maxSteps = program?.max_steps ?? 0;
   const progressPercent = maxSteps > 0 ? (currentStep / maxSteps) * 100 : 0;
+
+  // Check if execution is complete
+  const isExecutionComplete = isSuccess && currentStep >= maxSteps;
+  const allGoalsVisited = totalGoals > 0 && visitedGoals >= totalGoals;
+  const hasGoals = totalGoals > 0;
 
   return (
     <div
@@ -106,11 +125,43 @@ export function OutputPanel({
               </div>
             </div>
 
+            {/* Points display */}
+            {hasGoals && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">
+                  Points: <span className="font-bold text-foreground">{visitedGoals}</span> / {totalGoals}
+                </span>
+              </div>
+            )}
+
+            {/* Execution result */}
+            {isExecutionComplete && hasGoals && (
+              <div className="mt-2">
+                {allGoalsVisited ? (
+                  <div
+                    data-testid="result-success"
+                    className="flex items-center gap-2 text-success font-bold"
+                  >
+                    <Trophy className="w-4 h-4" />
+                    <span>Success! All targets reached!</span>
+                  </div>
+                ) : (
+                  <div
+                    data-testid="result-failure"
+                    className="flex items-center gap-2 text-destructive font-bold"
+                  >
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>Failed: {totalGoals - visitedGoals} target(s) remaining</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Timeline */}
             {program.timeline.length > 0 && (
               <div className="space-y-1">
                 <h3 className="text-xs font-medium text-muted-foreground">Timeline</h3>
-                <div className="max-h-40 overflow-y-auto space-y-0.5">
+                <div className="max-h-64 overflow-y-auto space-y-0.5">
                   {program.timeline.map((entry, index) => {
                     const isCurrent = index === currentStep;
                     const isCompleted = index < currentStep;
