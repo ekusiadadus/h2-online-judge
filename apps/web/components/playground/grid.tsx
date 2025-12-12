@@ -256,7 +256,7 @@ export function Grid({
           <div
             key={agent.id}
             className={cn(
-              "absolute flex items-center justify-center transition-all duration-300",
+              "absolute flex items-center justify-center transition-all duration-150",
               getAgentColor(agent.id)
             )}
             style={{

@@ -217,8 +217,8 @@ export default function PlaygroundPage() {
       return;
     }
 
-    // Calculate interval based on speed (1x = 500ms, 2x = 250ms, 4x = 125ms)
-    const intervalMs = 500 / speed;
+    // Calculate interval based on speed (1x = 300ms, 2x = 150ms, 4x = 75ms)
+    const intervalMs = 300 / speed;
 
     intervalRef.current = setInterval(() => {
       setCurrentStep((prev) => {
@@ -237,6 +237,13 @@ export default function PlaygroundPage() {
       }
     };
   }, [isRunning, compileResult, speed]);
+
+  // Auto-stop when all goals are visited
+  useEffect(() => {
+    if (isRunning && problem.goals.length > 0 && visitedGoals.length >= problem.goals.length) {
+      setIsRunning(false);
+    }
+  }, [isRunning, visitedGoals.length, problem.goals.length]);
 
   // Handle run
   const handleRun = useCallback(() => {
@@ -405,8 +412,8 @@ export default function PlaygroundPage() {
       {/* Problem info bar */}
       {problem.goals.length > 0 && (
         <div className="flex items-center gap-4 text-sm">
-          <span className="text-muted-foreground">
-            Targets: <span className="font-medium text-foreground">{remainingGoals}</span> / {problem.goals.length}
+          <span className="text-foreground">
+            Targets: <span className="font-bold">{visitedGoals.length}</span> / {problem.goals.length}
           </span>
           {allGoalsVisited && (
             <span className="text-green-600 font-medium">
