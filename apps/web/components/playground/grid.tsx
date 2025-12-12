@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import type { Program, Problem, Position } from "@/lib/h2lang/types";
+import type { Program, Problem, Position, Direction } from "@/lib/h2lang/types";
 
 interface GridProps {
   program: Program | null;
@@ -88,6 +88,7 @@ export function Grid({
     // Apply commands up to current step
     for (let step = 0; step < currentStep && step < program.timeline.length; step++) {
       const timelineEntry = program.timeline[step];
+      if (!timelineEntry) continue;
       for (const agentCommand of timelineEntry.agent_commands) {
         const state = states.find((s) => s.id === agentCommand.agent_id);
         if (!state) continue;
@@ -114,9 +115,9 @@ export function Grid({
           state.x = nextX;
           state.y = nextY;
         } else if (command.type === "rotate_right") {
-          state.direction = (state.direction + 90) % 360;
+          state.direction = ((state.direction + 90) % 360) as Direction;
         } else if (command.type === "rotate_left") {
-          state.direction = (state.direction - 90 + 360) % 360;
+          state.direction = ((state.direction - 90 + 360) % 360) as Direction;
         }
       }
     }

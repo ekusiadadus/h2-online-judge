@@ -53,7 +53,9 @@ describe("OutputPanel", () => {
 
     render(<OutputPanel compileResult={result} currentStep={2} />);
 
-    expect(screen.getByText(/step: 2 \/ 5/i)).toBeInTheDocument();
+    // Step count is split across elements, so check for individual parts
+    expect(screen.getByText("2")).toBeInTheDocument();
+    expect(screen.getByText(/\/ 5/)).toBeInTheDocument();
   });
 
   it("displays agent count on success", () => {
@@ -97,5 +99,123 @@ describe("OutputPanel", () => {
     expect(
       screen.getByText(/line 1, column 5: unexpected token/i)
     ).toBeInTheDocument();
+  });
+
+  describe("Timeline Display", () => {
+    it("displays timeline section on successful compilation", () => {
+      const result: CompileResult = {
+        status: "success",
+        program: {
+          agents: [{ id: 0, commands: [{ type: "straight" }] }],
+          max_steps: 3,
+          timeline: [
+            { step: 0, agent_commands: [{ agent_id: 0, command: { type: "straight" } }] },
+            { step: 1, agent_commands: [{ agent_id: 0, command: { type: "rotate_right" } }] },
+            { step: 2, agent_commands: [{ agent_id: 0, command: { type: "rotate_left" } }] },
+          ],
+        },
+      };
+
+      render(<OutputPanel compileResult={result} currentStep={0} />);
+
+      expect(screen.getByText("Timeline")).toBeInTheDocument();
+    });
+
+    it("displays command icons for each step", () => {
+      const result: CompileResult = {
+        status: "success",
+        program: {
+          agents: [{ id: 0, commands: [{ type: "straight" }] }],
+          max_steps: 3,
+          timeline: [
+            { step: 0, agent_commands: [{ agent_id: 0, command: { type: "straight" } }] },
+            { step: 1, agent_commands: [{ agent_id: 0, command: { type: "rotate_right" } }] },
+            { step: 2, agent_commands: [{ agent_id: 0, command: { type: "rotate_left" } }] },
+          ],
+        },
+      };
+
+      render(<OutputPanel compileResult={result} currentStep={1} />);
+
+      // Check that timeline items exist
+      expect(screen.getByTestId("timeline-step-0")).toBeInTheDocument();
+      expect(screen.getByTestId("timeline-step-1")).toBeInTheDocument();
+      expect(screen.getByTestId("timeline-step-2")).toBeInTheDocument();
+    });
+
+    it("highlights the current step", () => {
+      const result: CompileResult = {
+        status: "success",
+        program: {
+          agents: [{ id: 0, commands: [{ type: "straight" }] }],
+          max_steps: 3,
+          timeline: [
+            { step: 0, agent_commands: [{ agent_id: 0, command: { type: "straight" } }] },
+            { step: 1, agent_commands: [{ agent_id: 0, command: { type: "rotate_right" } }] },
+            { step: 2, agent_commands: [{ agent_id: 0, command: { type: "rotate_left" } }] },
+          ],
+        },
+      };
+
+      render(<OutputPanel compileResult={result} currentStep={1} />);
+
+      const currentStepElement = screen.getByTestId("timeline-step-1");
+      expect(currentStepElement).toHaveClass("bg-primary/20");
+    });
+
+    it("shows completed steps with different styling", () => {
+      const result: CompileResult = {
+        status: "success",
+        program: {
+          agents: [{ id: 0, commands: [{ type: "straight" }] }],
+          max_steps: 3,
+          timeline: [
+            { step: 0, agent_commands: [{ agent_id: 0, command: { type: "straight" } }] },
+            { step: 1, agent_commands: [{ agent_id: 0, command: { type: "rotate_right" } }] },
+            { step: 2, agent_commands: [{ agent_id: 0, command: { type: "rotate_left" } }] },
+          ],
+        },
+      };
+
+      render(<OutputPanel compileResult={result} currentStep={2} />);
+
+      // Completed steps should have muted styling
+      const completedStep = screen.getByTestId("timeline-step-0");
+      expect(completedStep).toHaveClass("text-muted-foreground");
+    });
+  });
+
+  describe("Progress Bar", () => {
+    it("displays progress bar on successful compilation", () => {
+      const result: CompileResult = {
+        status: "success",
+        program: {
+          agents: [{ id: 0, commands: [] }],
+          max_steps: 10,
+          timeline: [],
+        },
+      };
+
+      render(<OutputPanel compileResult={result} currentStep={5} />);
+
+      expect(screen.getByRole("progressbar")).toBeInTheDocument();
+    });
+
+    it("shows correct progress percentage", () => {
+      const result: CompileResult = {
+        status: "success",
+        program: {
+          agents: [{ id: 0, commands: [] }],
+          max_steps: 10,
+          timeline: [],
+        },
+      };
+
+      render(<OutputPanel compileResult={result} currentStep={5} />);
+
+      const progressBar = screen.getByRole("progressbar");
+      expect(progressBar).toHaveAttribute("aria-valuenow", "5");
+      expect(progressBar).toHaveAttribute("aria-valuemax", "10");
+    });
   });
 });

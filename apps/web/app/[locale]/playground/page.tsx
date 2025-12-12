@@ -8,7 +8,7 @@ import { ControlPanel } from "@/components/playground/control-panel";
 import { OutputPanel } from "@/components/playground/output-panel";
 import { ToolPalette, type ToolType } from "@/components/playground/tool-palette";
 import { initH2Lang, compile, isInitialized } from "@/lib/h2lang";
-import type { CompileResult, Program, Problem, Position } from "@/lib/h2lang/types";
+import type { CompileResult, Program, Problem, Position, Direction } from "@/lib/h2lang/types";
 
 /** Grid size (Herbert Online Judge specification) */
 const GRID_SIZE = 25;
@@ -155,6 +155,7 @@ export default function PlaygroundPage() {
     // Simulate up to current step
     for (let step = 0; step < currentStep && step < program.timeline.length; step++) {
       const timelineEntry = program.timeline[step];
+      if (!timelineEntry) continue;
       for (const agentCommand of timelineEntry.agent_commands) {
         const state = agentStates[agentCommand.agent_id];
         if (!state) continue;
@@ -190,9 +191,9 @@ export default function PlaygroundPage() {
             }
           }
         } else if (command.type === "rotate_right") {
-          state.direction = (state.direction + 90) % 360;
+          state.direction = ((state.direction + 90) % 360) as Direction;
         } else if (command.type === "rotate_left") {
-          state.direction = (state.direction - 90 + 360) % 360;
+          state.direction = ((state.direction - 90 + 360) % 360) as Direction;
         }
       }
     }
@@ -383,8 +384,14 @@ export default function PlaygroundPage() {
 
   return (
     <div className="flex flex-col p-4 gap-4">
-      {/* Control Panel and Tool Palette */}
+      {/* Tool Palette and Control Panel */}
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        <ToolPalette
+          selectedTool={selectedTool}
+          onToolSelect={handleToolSelect}
+          editMode={editMode}
+          onEditModeToggle={handleEditModeToggle}
+        />
         <ControlPanel
           onRun={handleRun}
           onStep={handleStep}
@@ -392,12 +399,6 @@ export default function PlaygroundPage() {
           onSpeedChange={handleSpeedChange}
           isRunning={isRunning}
           speed={speed}
-        />
-        <ToolPalette
-          selectedTool={selectedTool}
-          onToolSelect={handleToolSelect}
-          editMode={editMode}
-          onEditModeToggle={handleEditModeToggle}
         />
       </div>
 
@@ -415,10 +416,10 @@ export default function PlaygroundPage() {
         </div>
       )}
 
-      {/* Main content area */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Main content area - 3 column layout with custom widths */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Grid Visualization */}
-        <div className="flex flex-col">
+        <div className="flex flex-col lg:col-span-5">
           <h2 className="text-sm font-medium mb-2 text-muted-foreground">
             {t("grid.title", { defaultValue: "Grid" })}
             {editMode && (
@@ -439,7 +440,7 @@ export default function PlaygroundPage() {
         </div>
 
         {/* Code Editor */}
-        <div className="flex flex-col">
+        <div className="flex flex-col lg:col-span-5">
           <h2 className="text-sm font-medium mb-2 text-muted-foreground">
             {t("editor.title", { defaultValue: "Code" })}
             {!wasmReady && (
@@ -452,14 +453,23 @@ export default function PlaygroundPage() {
             value={code}
             onChange={setCode}
             placeholder={t("editor.placeholder")}
-            className="min-h-[632px]"
+            className="min-h-[400px]"
             disabled={!wasmReady}
           />
         </div>
-      </div>
 
-      {/* Output Panel */}
-      <OutputPanel compileResult={compileResult} currentStep={currentStep} />
+        {/* Output Panel */}
+        <div className="flex flex-col lg:col-span-2">
+          <h2 className="text-sm font-medium mb-2 text-muted-foreground">
+            {t("output.title", { defaultValue: "Output" })}
+          </h2>
+          <OutputPanel
+            compileResult={compileResult}
+            currentStep={currentStep}
+            className="h-full"
+          />
+        </div>
+      </div>
     </div>
   );
 }
