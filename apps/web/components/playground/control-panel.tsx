@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Play, StepForward, RotateCcw } from "lucide-react";
+import { Play, StepForward, RotateCcw, Route } from "lucide-react";
 
 interface ControlPanelProps {
   onRun: () => void;
@@ -13,6 +13,10 @@ interface ControlPanelProps {
   isRunning: boolean;
   speed: number;
   className?: string;
+  /** Show path trail toggle */
+  showPath?: boolean;
+  /** Callback when path toggle changes */
+  onShowPathChange?: (show: boolean) => void;
 }
 
 const SPEED_OPTIONS = [0.5, 1, 2, 4];
@@ -30,6 +34,8 @@ export function ControlPanel({
   isRunning,
   speed,
   className,
+  showPath = false,
+  onShowPathChange,
 }: ControlPanelProps) {
   const t = useTranslations("playground.controls");
 
@@ -57,6 +63,18 @@ export function ControlPanel({
         <RotateCcw className="w-4 h-4 mr-2" />
         {t("reset")}
       </Button>
+
+      {/* Path toggle */}
+      {onShowPathChange && (
+        <Button
+          onClick={() => onShowPathChange(!showPath)}
+          variant={showPath ? "default" : "outline"}
+          size="sm"
+        >
+          <Route className="w-4 h-4 mr-2" />
+          {t("path", { defaultValue: "経路" })}
+        </Button>
+      )}
 
       {/* Speed control */}
       <div className="flex items-center gap-2 ml-auto">

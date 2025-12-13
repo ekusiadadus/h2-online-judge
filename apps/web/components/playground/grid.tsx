@@ -18,6 +18,8 @@ interface GridProps {
   editMode?: boolean;
   /** Callback when a cell is clicked in edit mode */
   onCellClick?: (x: number, y: number) => void;
+  /** Show path trail for agents */
+  showPath?: boolean;
 }
 
 interface AgentState {
@@ -55,6 +57,7 @@ export function Grid({
   visitedGoals = [],
   editMode = false,
   onCellClick,
+  showPath = false,
 }: GridProps) {
   // Get start position from problem or default to center
   const startPosition = problem?.startPosition ?? {
@@ -66,15 +69,18 @@ export function Grid({
   // Get walls for collision detection
   const walls = problem?.walls ?? [];
 
-  // Calculate agent states based on program and current step
-  const agentStates = useMemo(() => {
+  // Calculate agent states and path history based on program and current step
+  const { agentStates, pathHistory } = useMemo(() => {
     if (!program) {
-      return [{
-        id: 0,
-        x: startPosition.x,
-        y: startPosition.y,
-        direction: startPosition.direction,
-      }];
+      return {
+        agentStates: [{
+          id: 0,
+          x: startPosition.x,
+          y: startPosition.y,
+          direction: startPosition.direction,
+        }],
+        pathHistory: [[{ x: startPosition.x, y: startPosition.y }]],
+      };
     }
 
     // Initialize agents at start position
@@ -85,12 +91,18 @@ export function Grid({
       direction: startPosition.direction,
     }));
 
+    // Initialize path history for each agent
+    const paths: Position[][] = program.agents.map(() => [
+      { x: startPosition.x, y: startPosition.y },
+    ]);
+
     // Apply commands up to current step
     for (let step = 0; step < currentStep && step < program.timeline.length; step++) {
       const timelineEntry = program.timeline[step];
       if (!timelineEntry) continue;
       for (const agentCommand of timelineEntry.agent_commands) {
-        const state = states.find((s) => s.id === agentCommand.agent_id);
+        const stateIndex = states.findIndex((s) => s.id === agentCommand.agent_id);
+        const state = states[stateIndex];
         if (!state) continue;
 
         const command = agentCommand.command;
@@ -114,6 +126,9 @@ export function Grid({
           // Move forward
           state.x = nextX;
           state.y = nextY;
+
+          // Record path
+          paths[stateIndex]?.push({ x: nextX, y: nextY });
         } else if (command.type === "rotate_right") {
           state.direction = ((state.direction + 90) % 360) as Direction;
         } else if (command.type === "rotate_left") {
@@ -122,7 +137,7 @@ export function Grid({
       }
     }
 
-    return states;
+    return { agentStates: states, pathHistory: paths };
   }, [program, currentStep, gridSize, startPosition, walls]);
 
   // Get agent color class
@@ -138,6 +153,23 @@ export function Grid({
       "bg-agent-7",
       "bg-agent-8",
       "bg-agent-9",
+    ];
+    return colors[id % colors.length];
+  };
+
+  // Get stroke color for path SVG
+  const getPathStrokeColor = (id: number) => {
+    const colors = [
+      "#3b82f6", // blue
+      "#ef4444", // red
+      "#22c55e", // green
+      "#f59e0b", // amber
+      "#8b5cf6", // purple
+      "#ec4899", // pink
+      "#06b6d4", // cyan
+      "#f97316", // orange
+      "#6366f1", // indigo
+      "#84cc16", // lime
     ];
     return colors[id % colors.length];
   };
@@ -192,6 +224,39 @@ export function Grid({
             />
           );
         })}
+
+        {/* Path trails (SVG) */}
+        {showPath && pathHistory.length > 0 && (
+          <svg
+            className="absolute inset-0 pointer-events-none"
+            width={gridSize * CELL_SIZE}
+            height={gridSize * CELL_SIZE}
+            style={{ zIndex: 5 }}
+          >
+            {pathHistory.map((path, agentIndex) => {
+              if (path.length < 2) return null;
+              const pathD = path
+                .map((pos, i) => {
+                  const cx = pos.x * CELL_SIZE + CELL_SIZE / 2;
+                  const cy = pos.y * CELL_SIZE + CELL_SIZE / 2;
+                  return i === 0 ? `M ${cx} ${cy}` : `L ${cx} ${cy}`;
+                })
+                .join(" ");
+              return (
+                <path
+                  key={`path-${agentIndex}`}
+                  d={pathD}
+                  fill="none"
+                  stroke={getPathStrokeColor(agentIndex)}
+                  strokeWidth={3}
+                  strokeOpacity={0.6}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              );
+            })}
+          </svg>
+        )}
 
         {/* Walls (black blocks) */}
         {problem?.walls.map((wall, index) => (

@@ -60,6 +60,7 @@ export default function PlaygroundPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [speed, setSpeed] = useState(1);
+  const [showPath, setShowPath] = useState(false);
 
   // Problem editor state
   const [editMode, setEditMode] = useState(false);
@@ -406,6 +407,8 @@ export default function PlaygroundPage() {
           onSpeedChange={handleSpeedChange}
           isRunning={isRunning}
           speed={speed}
+          showPath={showPath}
+          onShowPathChange={setShowPath}
         />
       </div>
 
@@ -443,6 +446,7 @@ export default function PlaygroundPage() {
             visitedGoals={visitedGoals}
             editMode={editMode}
             onCellClick={handleCellClick}
+            showPath={showPath}
           />
         </div>
 

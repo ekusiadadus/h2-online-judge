@@ -58,7 +58,8 @@
       "run": "実行",
       "step": "ステップ",
       "reset": "リセット",
-      "speed": "速度"
+      "speed": "速度",
+      "path": "経路"
     },
     "output": {
       "title": "出力",

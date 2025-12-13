@@ -58,7 +58,8 @@
       "run": "Run",
       "step": "Step",
       "reset": "Reset",
-      "speed": "Speed"
+      "speed": "Speed",
+      "path": "Path"
     },
     "output": {
       "title": "Output",
