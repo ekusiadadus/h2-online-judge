@@ -7,6 +7,7 @@ vi.mock("next-intl", () => ({
     const translations: Record<string, string> = {
       run: "Run",
       step: "Step",
+      stop: "Stop",
       reset: "Reset",
       speed: "Speed",
     };
@@ -68,11 +69,33 @@ describe("ControlPanel", () => {
     expect(onReset).toHaveBeenCalled();
   });
 
-  it("disables run and step buttons when running", () => {
-    render(<ControlPanel {...defaultProps} isRunning={true} />);
+  it("disables step button when running", () => {
+    render(<ControlPanel {...defaultProps} isRunning={true} onStop={vi.fn()} />);
 
-    expect(screen.getByRole("button", { name: /run/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /step/i })).toBeDisabled();
+  });
+
+  it("shows stop button instead of run button when running", () => {
+    const onStop = vi.fn();
+    render(<ControlPanel {...defaultProps} isRunning={true} onStop={onStop} />);
+
+    expect(screen.getByRole("button", { name: /stop/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /run/i })).not.toBeInTheDocument();
+  });
+
+  it("calls onStop when stop button is clicked", () => {
+    const onStop = vi.fn();
+    render(<ControlPanel {...defaultProps} isRunning={true} onStop={onStop} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /stop/i }));
+    expect(onStop).toHaveBeenCalled();
+  });
+
+  it("shows run button when not running", () => {
+    render(<ControlPanel {...defaultProps} isRunning={false} onStop={vi.fn()} />);
+
+    expect(screen.getByRole("button", { name: /run/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /stop/i })).not.toBeInTheDocument();
   });
 
   it("renders speed options", () => {

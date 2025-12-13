@@ -3,11 +3,12 @@
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Play, StepForward, RotateCcw, Route } from "lucide-react";
+import { Play, Square, StepForward, RotateCcw, Route } from "lucide-react";
 
 interface ControlPanelProps {
   onRun: () => void;
   onStep: () => void;
+  onStop?: () => void;
   onReset: () => void;
   onSpeedChange: (speed: number) => void;
   isRunning: boolean;
@@ -29,6 +30,7 @@ const SPEED_OPTIONS = [0.5, 1, 2, 4];
 export function ControlPanel({
   onRun,
   onStep,
+  onStop,
   onReset,
   onSpeedChange,
   isRunning,
@@ -46,11 +48,18 @@ export function ControlPanel({
         className
       )}
     >
-      {/* Run button */}
-      <Button onClick={onRun} disabled={isRunning} variant="default" size="sm">
-        <Play className="w-4 h-4 mr-2" />
-        {t("run")}
-      </Button>
+      {/* Run/Stop button - toggles based on running state */}
+      {isRunning && onStop ? (
+        <Button onClick={onStop} variant="destructive" size="sm">
+          <Square className="w-4 h-4 mr-2" />
+          {t("stop")}
+        </Button>
+      ) : (
+        <Button onClick={onRun} variant="default" size="sm">
+          <Play className="w-4 h-4 mr-2" />
+          {t("run")}
+        </Button>
+      )}
 
       {/* Step button */}
       <Button onClick={onStep} disabled={isRunning} variant="secondary" size="sm">

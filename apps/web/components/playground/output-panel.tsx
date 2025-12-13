@@ -40,6 +40,22 @@ function CommandIcon({ type }: { type: CommandType }) {
 }
 
 /**
+ * Get short label for command type.
+ */
+function getCommandShortLabel(type: CommandType): string {
+  switch (type) {
+    case "straight":
+      return "s";
+    case "rotate_right":
+      return "r";
+    case "rotate_left":
+      return "l";
+    default:
+      return type;
+  }
+}
+
+/**
  * Get label for command type.
  */
 function getCommandLabel(type: CommandType): string {
@@ -82,11 +98,11 @@ export function OutputPanel({
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-card p-4",
+        "rounded-lg border border-border bg-card p-4 flex flex-col",
         className
       )}
     >
-      <div className="font-mono text-sm">
+      <div className="font-mono text-sm flex flex-col flex-1 min-h-0">
         {!compileResult && (
           <p className="text-muted-foreground">
             {t("waiting", { defaultValue: "Press Run or Step to compile and execute." })}
@@ -94,7 +110,7 @@ export function OutputPanel({
         )}
 
         {isSuccess && program && (
-          <div className="space-y-3">
+          <div className="space-y-3 flex flex-col flex-1 min-h-0">
             {/* Success message */}
             <div className="flex items-center gap-2 text-success">
               <CheckCircle className="w-4 h-4" />
@@ -159,9 +175,9 @@ export function OutputPanel({
 
             {/* Timeline */}
             {program.timeline.length > 0 && (
-              <div className="space-y-1">
-                <h3 className="text-xs font-medium text-muted-foreground">Timeline</h3>
-                <div className="max-h-64 overflow-y-auto space-y-0.5">
+              <div className="flex flex-col flex-1 min-h-0">
+                <h3 className="text-xs font-medium text-muted-foreground mb-1">Timeline</h3>
+                <div className="flex-1 overflow-y-auto space-y-0.5">
                   {program.timeline.map((entry, index) => {
                     const isCurrent = index === currentStep;
                     const isCompleted = index < currentStep;
@@ -187,10 +203,13 @@ export function OutputPanel({
                             <span
                               key={cmdIndex}
                               className={cn(
-                                "inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded",
+                                "inline-flex items-center gap-1 px-1.5 py-0.5 rounded",
                                 isCurrent ? "bg-primary/30" : "bg-muted"
                               )}
                             >
+                              <span className="text-primary font-bold text-xs">
+                                {getCommandShortLabel(agentCmd.command.type)}
+                              </span>
                               <CommandIcon type={agentCmd.command.type} />
                               <span className="text-[10px]">
                                 {getCommandLabel(agentCmd.command.type)}

@@ -251,14 +251,23 @@ export default function PlaygroundPage() {
     // Exit edit mode when running
     setEditMode(false);
 
-    // Always recompile to ensure we have the latest code
+    // If already compiled and not at the end, resume from current step
+    if (
+      compileResult?.status === "success" &&
+      currentStep < compileResult.program.max_steps
+    ) {
+      setIsRunning(true);
+      return;
+    }
+
+    // Otherwise, recompile and start from beginning
     const result = handleCompile();
 
     if (result?.status === "success") {
       setCurrentStep(0);
       setIsRunning(true);
     }
-  }, [handleCompile]);
+  }, [compileResult, currentStep, handleCompile]);
 
   // Handle step
   const handleStep = useCallback(() => {
@@ -284,6 +293,11 @@ export default function PlaygroundPage() {
   const handleReset = useCallback(() => {
     setIsRunning(false);
     setCurrentStep(0);
+  }, []);
+
+  // Handle stop
+  const handleStop = useCallback(() => {
+    setIsRunning(false);
   }, []);
 
   // Handle speed change
@@ -403,6 +417,7 @@ export default function PlaygroundPage() {
         <ControlPanel
           onRun={handleRun}
           onStep={handleStep}
+          onStop={handleStop}
           onReset={handleReset}
           onSpeedChange={handleSpeedChange}
           isRunning={isRunning}
