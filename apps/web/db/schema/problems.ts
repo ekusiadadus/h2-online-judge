@@ -14,6 +14,9 @@ export const problems = sqliteTable(
       .notNull()
       .references(() => users.id),
     isPublic: integer("is_public", { mode: "boolean" }).notNull().default(false),
+    status: text("status", { enum: ["draft", "published"] })
+      .notNull()
+      .default("draft"),
     gridSize: integer("grid_size").notNull().default(25),
     startPositionJson: text("start_position_json").notNull(), // JSON: {x, y, direction}
     goalsJson: text("goals_json").notNull().default("[]"), // JSON: [{x, y}]
@@ -37,6 +40,7 @@ export const problems = sqliteTable(
       table.authorId,
       table.createdAt
     ),
+    index("problems_status_created_at_idx").on(table.status, table.createdAt),
   ]
 );
 

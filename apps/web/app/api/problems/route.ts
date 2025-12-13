@@ -29,8 +29,10 @@ export async function GET(request: NextRequest) {
     );
     const offset = (page - 1) * limit;
 
-    // Admin sees all, others see only public
-    const whereClause = isAdmin ? undefined : eq(problems.isPublic, true);
+    // Admin sees all, others see only published & public
+    const whereClause = isAdmin
+      ? undefined
+      : and(eq(problems.isPublic, true), eq(problems.status, "published"));
 
     const results = await db.query.problems.findMany({
       where: whereClause,
@@ -81,6 +83,7 @@ export async function POST(request: NextRequest) {
         difficulty: validated.difficulty,
         authorId: admin.id,
         isPublic: validated.isPublic,
+        status: validated.status,
         gridSize: validated.gridSize,
         startPositionJson: JSON.stringify(validated.startPosition),
         goalsJson: JSON.stringify(validated.goals),

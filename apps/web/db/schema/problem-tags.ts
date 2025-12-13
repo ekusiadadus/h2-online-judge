@@ -1,4 +1,5 @@
 import { sqliteTable, text, primaryKey, index } from "drizzle-orm/sqlite-core";
+import { relations } from "drizzle-orm";
 import { problems } from "./problems";
 import { tags } from "./tags";
 
@@ -20,3 +21,17 @@ export const problemTags = sqliteTable(
 );
 
 export type ProblemTag = typeof problemTags.$inferSelect;
+
+/**
+ * Relations for problemTags table.
+ */
+export const problemTagsRelations = relations(problemTags, ({ one }) => ({
+  problem: one(problems, {
+    fields: [problemTags.problemId],
+    references: [problems.id],
+  }),
+  tag: one(tags, {
+    fields: [problemTags.tagId],
+    references: [tags.id],
+  }),
+}));

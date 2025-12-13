@@ -7,6 +7,8 @@ import { Grid } from "@/components/playground/grid";
 import { ControlPanel } from "@/components/playground/control-panel";
 import { OutputPanel } from "@/components/playground/output-panel";
 import { ToolPalette, type ToolType } from "@/components/playground/tool-palette";
+import { SaveDraftModal } from "@/components/playground/save-draft-modal";
+import { Button } from "@/components/ui/button";
 import { initH2Lang, compile, isInitialized } from "@/lib/h2lang";
 import type { CompileResult, Program, Problem, Position, Direction } from "@/lib/h2lang/types";
 
@@ -65,6 +67,7 @@ export default function PlaygroundPage() {
   // Problem editor state
   const [editMode, setEditMode] = useState(false);
   const [selectedTool, setSelectedTool] = useState<ToolType>("goal");
+  const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
   const [problem, setProblem] = useState<Problem>({
     goals: [],
     walls: [],
@@ -406,14 +409,23 @@ export default function PlaygroundPage() {
 
   return (
     <div className="flex flex-col p-4 gap-4">
-      {/* Tool Palette and Control Panel */}
+      {/* Tool Palette, Save Draft, and Control Panel */}
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-        <ToolPalette
-          selectedTool={selectedTool}
-          onToolSelect={handleToolSelect}
-          editMode={editMode}
-          onEditModeToggle={handleEditModeToggle}
-        />
+        <div className="flex items-center gap-4">
+          <ToolPalette
+            selectedTool={selectedTool}
+            onToolSelect={handleToolSelect}
+            editMode={editMode}
+            onEditModeToggle={handleEditModeToggle}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowSaveDraftModal(true)}
+          >
+            {t("saveDraft.button")}
+          </Button>
+        </div>
         <ControlPanel
           onRun={handleRun}
           onStep={handleStep}
@@ -498,6 +510,14 @@ export default function PlaygroundPage() {
           />
         </div>
       </div>
+
+      {/* Save Draft Modal */}
+      <SaveDraftModal
+        isOpen={showSaveDraftModal}
+        onClose={() => setShowSaveDraftModal(false)}
+        problem={problem}
+        code={code}
+      />
     </div>
   );
 }

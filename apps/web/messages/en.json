@@ -67,6 +67,20 @@
       "success": "Compile successful",
       "error": "Compile error",
       "waiting": "Press Run or Step to compile and execute"
+    },
+    "saveDraft": {
+      "button": "Save as Draft",
+      "title": "Save Problem Draft",
+      "titleLabel": "Problem Title",
+      "titlePlaceholder": "Enter problem title",
+      "descriptionLabel": "Description (optional)",
+      "descriptionPlaceholder": "Enter problem description",
+      "difficultyLabel": "Difficulty",
+      "save": "Save Draft",
+      "saving": "Saving...",
+      "success": "Draft saved!",
+      "error": "Failed to save draft",
+      "loginRequired": "Please login to save drafts"
     }
   },
   "footer": {
@@ -97,10 +111,39 @@
     },
     "card": {
       "by": "by"
+    },
+    "solve": {
+      "loginToSubmit": "Login to submit",
+      "submitting": "Submitting...",
+      "submit": "Submit",
+      "accepted": "Accepted!",
+      "wrongAnswer": "Wrong Answer",
+      "ranking": "Ranking",
+      "noSubmissions": "No submissions yet",
+      "place": "Place",
+      "steps": "Steps",
+      "bytes": "Bytes",
+      "userName": "User Name",
+      "date": "Date"
     }
   },
   "admin": {
     "problems": {
+      "list": {
+        "title": "Manage Problems",
+        "subtitle": "View and manage your problem drafts",
+        "empty": "No problems yet",
+        "createNew": "Create New Problem",
+        "draft": "Draft",
+        "published": "Published",
+        "edit": "Edit",
+        "delete": "Delete",
+        "publish": "Publish",
+        "confirmDelete": "Are you sure you want to delete this problem?"
+      },
+      "edit": {
+        "title": "Edit Problem"
+      },
       "new": {
         "title": "Create New Problem",
         "form": {
@@ -132,9 +175,11 @@
           "tagsPlaceholder": "Enter tags (comma separated)",
           "isPublic": "Public",
           "submit": "Create Problem",
-          "submitting": "Creating...",
-          "success": "Problem created successfully!",
-          "error": "Failed to create problem"
+          "submitting": "Saving...",
+          "success": "Problem saved successfully!",
+          "error": "Failed to save problem",
+          "saveDraft": "Save as Draft",
+          "publish": "Publish"
         }
       }
     },

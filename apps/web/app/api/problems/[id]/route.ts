@@ -23,8 +23,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Problem not found" }, { status: 404 });
     }
 
-    // Check visibility
-    if (!problem.isPublic && !isAdmin) {
+    // Check visibility (non-admins can only see published & public problems)
+    if (!isAdmin && (!problem.isPublic || problem.status !== "published")) {
       return NextResponse.json({ error: "Problem not found" }, { status: 404 });
     }
 
@@ -88,6 +88,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         updateData.difficulty = validated.difficulty;
       if (validated.isPublic !== undefined)
         updateData.isPublic = validated.isPublic;
+      if (validated.status !== undefined) updateData.status = validated.status;
       if (validated.gridSize !== undefined)
         updateData.gridSize = validated.gridSize;
       if (validated.startPosition !== undefined)

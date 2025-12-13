@@ -18,13 +18,17 @@ const startPositionSchema = z.object({
     }),
 });
 
+/** Fixed grid size for Herbert Online Judge */
+const GRID_SIZE = 25;
+
 export const createProblemSchema = z
   .object({
     title: z.string().min(1).max(120),
     description: z.string().max(20000).default(""),
     difficulty: z.enum(["easy", "medium", "hard"]).default("easy"),
     isPublic: z.boolean().default(false),
-    gridSize: z.number().int().min(5).max(100).default(25),
+    status: z.enum(["draft", "published"]).default("draft"),
+    gridSize: z.number().int().default(GRID_SIZE),
     startPosition: startPositionSchema,
     goals: z.array(positionSchema).default([]),
     walls: z.array(positionSchema).default([]),
@@ -35,8 +39,8 @@ export const createProblemSchema = z
   })
   .refine(
     (data) => {
-      // Validate all positions are within grid
-      const size = data.gridSize;
+      // Validate all positions are within grid (fixed at 25x25)
+      const size = GRID_SIZE;
       const allPositions = [
         data.startPosition,
         ...data.goals,
@@ -45,7 +49,7 @@ export const createProblemSchema = z
       ];
       return allPositions.every((p) => p.x < size && p.y < size);
     },
-    { message: "All positions must be within grid bounds" }
+    { message: "All positions must be within grid bounds (25x25)" }
   );
 
 export const updateProblemSchema = createProblemSchema.partial();

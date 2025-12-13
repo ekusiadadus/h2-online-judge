@@ -1,71 +1,201 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Grid } from "@/components/playground/grid";
+import { ToolPalette, type ToolType } from "@/components/playground/tool-palette";
+import type { Problem, Position, Direction } from "@/lib/h2lang/types";
 
-interface Position {
-  x: number;
-  y: number;
-}
+/** Fixed grid size for Herbert Online Judge */
+const GRID_SIZE = 25;
 
 interface ProblemFormData {
   title: string;
   description: string;
   difficulty: "easy" | "medium" | "hard";
-  gridSize: number;
-  maxSteps: number;
-  startPosition: { x: number; y: number; direction: number };
-  goals: Position[];
-  walls: Position[];
-  traps: Position[];
   sampleCode: string;
   tags: string[];
   isPublic: boolean;
+  status: "draft" | "published";
+}
+
+interface ProblemFormProps {
+  /** Initial problem data for editing */
+  initialProblem?: Problem & ProblemFormData & { id?: string };
+  /** Mode: create or edit */
+  mode?: "create" | "edit";
 }
 
 const initialFormData: ProblemFormData = {
   title: "",
   description: "",
   difficulty: "easy",
-  gridSize: 10,
-  maxSteps: 1000,
-  startPosition: { x: 0, y: 0, direction: 0 },
-  goals: [],
-  walls: [],
-  traps: [],
   sampleCode: "",
   tags: [],
   isPublic: false,
+  status: "draft",
 };
 
 /**
- * Problem creation form component.
+ * Check if a position exists in an array of positions.
  */
-export function ProblemForm() {
+function hasPosition(positions: Position[], x: number, y: number): boolean {
+  return positions.some((p) => p.x === x && p.y === y);
+}
+
+/**
+ * Remove a position from an array of positions.
+ */
+function removePosition(positions: Position[], x: number, y: number): Position[] {
+  return positions.filter((p) => !(p.x === x && p.y === y));
+}
+
+/**
+ * Problem creation/edit form with visual grid editor.
+ */
+export function ProblemForm({ initialProblem, mode = "create" }: ProblemFormProps) {
   const t = useTranslations("admin.problems.new.form");
   const tDifficulty = useTranslations("problems.difficulty");
   const router = useRouter();
 
-  const [formData, setFormData] = useState<ProblemFormData>(initialFormData);
-  const [tagsInput, setTagsInput] = useState("");
+  // Form data state
+  const [formData, setFormData] = useState<ProblemFormData>(
+    initialProblem
+      ? {
+          title: initialProblem.title,
+          description: initialProblem.description,
+          difficulty: initialProblem.difficulty,
+          sampleCode: initialProblem.sampleCode,
+          tags: initialProblem.tags,
+          isPublic: initialProblem.isPublic,
+          status: initialProblem.status,
+        }
+      : initialFormData
+  );
+  const [tagsInput, setTagsInput] = useState(
+    initialProblem?.tags?.join(", ") || ""
+  );
+
+  // Problem layout state (grid elements)
+  const [problem, setProblem] = useState<Problem>(
+    initialProblem
+      ? {
+          goals: initialProblem.goals,
+          walls: initialProblem.walls,
+          traps: initialProblem.traps,
+          startPosition: initialProblem.startPosition,
+        }
+      : {
+          goals: [],
+          walls: [],
+          traps: [],
+          startPosition: {
+            x: Math.floor(GRID_SIZE / 2),
+            y: Math.floor(GRID_SIZE / 2),
+            direction: 0,
+          },
+        }
+  );
+
+  // Edit mode state
+  const [editMode, setEditMode] = useState(true);
+  const [selectedTool, setSelectedTool] = useState<ToolType>("goal");
+
+  // Submission state
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle cell click in edit mode
+  const handleCellClick = useCallback(
+    (x: number, y: number) => {
+      setProblem((prev) => {
+        const newProblem = { ...prev };
+
+        const hasGoal = hasPosition(prev.goals, x, y);
+        const hasWall = hasPosition(prev.walls, x, y);
+        const hasTrap = hasPosition(prev.traps, x, y);
+
+        const clearPosition = () => {
+          newProblem.goals = removePosition(prev.goals, x, y);
+          newProblem.walls = removePosition(prev.walls, x, y);
+          newProblem.traps = removePosition(prev.traps, x, y);
+        };
+
+        switch (selectedTool) {
+          case "goal":
+            if (hasGoal) {
+              newProblem.goals = removePosition(prev.goals, x, y);
+            } else {
+              clearPosition();
+              newProblem.goals = [...newProblem.goals, { x, y }];
+            }
+            break;
+
+          case "wall":
+            if (hasWall) {
+              newProblem.walls = removePosition(prev.walls, x, y);
+            } else {
+              clearPosition();
+              newProblem.walls = [...newProblem.walls, { x, y }];
+            }
+            break;
+
+          case "trap":
+            if (hasTrap) {
+              newProblem.traps = removePosition(prev.traps, x, y);
+            } else {
+              clearPosition();
+              newProblem.traps = [...newProblem.traps, { x, y }];
+            }
+            break;
+
+          case "start":
+            clearPosition();
+            newProblem.startPosition = {
+              x,
+              y,
+              direction: prev.startPosition.direction,
+            };
+            break;
+
+          case "erase":
+            clearPosition();
+            break;
+        }
+
+        return newProblem;
+      });
+    },
+    [selectedTool]
+  );
+
+  const handleSubmit = async (e: React.FormEvent, saveStatus: "draft" | "published") => {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
 
     try {
-      const res = await fetch("/api/problems", {
-        method: "POST",
+      const endpoint =
+        mode === "edit" && initialProblem?.id
+          ? `/api/problems/${initialProblem.id}`
+          : "/api/problems";
+      const method = mode === "edit" ? "PUT" : "POST";
+
+      const res = await fetch(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          status: saveStatus,
+          isPublic: saveStatus === "published",
+          gridSize: GRID_SIZE,
+          startPosition: problem.startPosition,
+          goals: problem.goals,
+          walls: problem.walls,
+          traps: problem.traps,
           tags: tagsInput
             .split(",")
             .map((t) => t.trim())
@@ -80,99 +210,17 @@ export function ProblemForm() {
 
       setSuccess(true);
       setTimeout(() => {
-        router.push("/problems");
+        if (saveStatus === "published") {
+          router.push("/problems");
+        } else {
+          router.push("/admin/problems");
+        }
       }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("error"));
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const addPosition = (
-    field: "goals" | "walls" | "traps",
-    x: number,
-    y: number
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: [...prev[field], { x, y }],
-    }));
-  };
-
-  const removePosition = (field: "goals" | "walls" | "traps", index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: prev[field].filter((_, i) => i !== index),
-    }));
-  };
-
-  const PositionEditor = ({
-    field,
-    label,
-  }: {
-    field: "goals" | "walls" | "traps";
-    label: string;
-  }) => {
-    const [newX, setNewX] = useState(0);
-    const [newY, setNewY] = useState(0);
-
-    return (
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">{label}</label>
-        <div className="flex gap-2 items-center">
-          <input
-            type="number"
-            min={0}
-            max={formData.gridSize - 1}
-            value={newX}
-            onChange={(e) => setNewX(parseInt(e.target.value) || 0)}
-            className="w-16 px-2 py-1 border border-border rounded bg-background"
-            placeholder="X"
-          />
-          <input
-            type="number"
-            min={0}
-            max={formData.gridSize - 1}
-            value={newY}
-            onChange={(e) => setNewY(parseInt(e.target.value) || 0)}
-            className="w-16 px-2 py-1 border border-border rounded bg-background"
-            placeholder="Y"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              addPosition(field, newX, newY);
-              setNewX(0);
-              setNewY(0);
-            }}
-          >
-            {t("addPosition")}
-          </Button>
-        </div>
-        {formData[field].length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {formData[field].map((pos, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center gap-1 px-2 py-1 bg-muted rounded text-sm"
-              >
-                ({pos.x}, {pos.y})
-                <button
-                  type="button"
-                  onClick={() => removePosition(field, i)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-    );
   };
 
   if (success) {
@@ -184,13 +232,14 @@ export function ProblemForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
       {error && (
         <div className="rounded-lg border border-red-500 bg-red-50 dark:bg-red-900/20 p-4">
           <p className="text-red-700 dark:text-red-300">{error}</p>
         </div>
       )}
 
+      {/* Title and Difficulty */}
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-2">
           <label className="block text-sm font-medium">{t("title")}</label>
@@ -226,10 +275,11 @@ export function ProblemForm() {
         </div>
       </div>
 
+      {/* Description */}
       <div className="space-y-2">
         <label className="block text-sm font-medium">{t("description")}</label>
         <textarea
-          rows={5}
+          rows={4}
           maxLength={20000}
           value={formData.description}
           onChange={(e) =>
@@ -240,133 +290,88 @@ export function ProblemForm() {
         />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">{t("gridSize")}</label>
-          <input
-            type="number"
-            min={5}
-            max={100}
-            value={formData.gridSize}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                gridSize: parseInt(e.target.value) || 10,
-              }))
-            }
-            className="w-full px-3 py-2 border border-border rounded-md bg-background"
+      {/* Visual Grid Editor */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium">Grid Editor (25x25)</h3>
+          <ToolPalette
+            selectedTool={selectedTool}
+            onToolSelect={setSelectedTool}
+            editMode={editMode}
+            onEditModeToggle={() => setEditMode(!editMode)}
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">{t("maxSteps")}</label>
-          <input
-            type="number"
-            min={1}
-            max={10000}
-            value={formData.maxSteps}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                maxSteps: parseInt(e.target.value) || 1000,
-              }))
-            }
-            className="w-full px-3 py-2 border border-border rounded-md bg-background"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.isPublic}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, isPublic: e.target.checked }))
-              }
-              className="w-4 h-4 rounded border-border"
-            />
-            <span className="text-sm font-medium">{t("isPublic")}</span>
-          </label>
-        </div>
-      </div>
-
-      <div className="rounded-lg border border-border p-4 space-y-4">
-        <h3 className="font-medium">{t("startPosition")}</h3>
-        <div className="grid gap-4 md:grid-cols-4">
-          <div className="space-y-2">
-            <label className="block text-sm text-muted-foreground">
-              {t("startX")}
-            </label>
-            <input
-              type="number"
-              min={0}
-              max={formData.gridSize - 1}
-              value={formData.startPosition.x}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  startPosition: {
-                    ...prev.startPosition,
-                    x: parseInt(e.target.value) || 0,
-                  },
-                }))
-              }
-              className="w-full px-3 py-2 border border-border rounded-md bg-background"
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex-shrink-0">
+            <Grid
+              program={null}
+              currentStep={0}
+              isRunning={false}
+              gridSize={GRID_SIZE}
+              problem={problem}
+              editMode={editMode}
+              onCellClick={handleCellClick}
             />
           </div>
-          <div className="space-y-2">
-            <label className="block text-sm text-muted-foreground">
-              {t("startY")}
-            </label>
-            <input
-              type="number"
-              min={0}
-              max={formData.gridSize - 1}
-              value={formData.startPosition.y}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  startPosition: {
-                    ...prev.startPosition,
-                    y: parseInt(e.target.value) || 0,
-                  },
-                }))
-              }
-              className="w-full px-3 py-2 border border-border rounded-md bg-background"
-            />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <label className="block text-sm text-muted-foreground">
-              {t("startDirection")}
-            </label>
-            <select
-              value={formData.startPosition.direction}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  startPosition: {
-                    ...prev.startPosition,
-                    direction: parseInt(e.target.value),
-                  },
-                }))
-              }
-              className="w-full px-3 py-2 border border-border rounded-md bg-background"
-            >
-              <option value={0}>{t("directions.0")}</option>
-              <option value={90}>{t("directions.90")}</option>
-              <option value={180}>{t("directions.180")}</option>
-              <option value={270}>{t("directions.270")}</option>
-            </select>
+
+          <div className="flex-1 space-y-4">
+            {/* Grid Info */}
+            <div className="rounded-lg border border-border bg-card p-4 space-y-2">
+              <h4 className="font-medium">Problem Info</h4>
+              <dl className="grid grid-cols-2 gap-2 text-sm">
+                <dt className="text-muted-foreground">Start Position</dt>
+                <dd>
+                  ({problem.startPosition.x}, {problem.startPosition.y})
+                </dd>
+                <dt className="text-muted-foreground">Direction</dt>
+                <dd>
+                  {problem.startPosition.direction === 0
+                    ? "Right →"
+                    : problem.startPosition.direction === 90
+                      ? "Down ↓"
+                      : problem.startPosition.direction === 180
+                        ? "Left ←"
+                        : "Up ↑"}
+                </dd>
+                <dt className="text-muted-foreground">Goals</dt>
+                <dd>{problem.goals.length}</dd>
+                <dt className="text-muted-foreground">Walls</dt>
+                <dd>{problem.walls.length}</dd>
+                <dt className="text-muted-foreground">Traps</dt>
+                <dd>{problem.traps.length}</dd>
+              </dl>
+            </div>
+
+            {/* Direction Selector */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">
+                {t("startDirection")}
+              </label>
+              <select
+                value={problem.startPosition.direction}
+                onChange={(e) =>
+                  setProblem((prev) => ({
+                    ...prev,
+                    startPosition: {
+                      ...prev.startPosition,
+                      direction: parseInt(e.target.value) as Direction,
+                    },
+                  }))
+                }
+                className="w-full px-3 py-2 border border-border rounded-md bg-background"
+              >
+                <option value={0}>{t("directions.0")} →</option>
+                <option value={90}>{t("directions.90")} ↓</option>
+                <option value={180}>{t("directions.180")} ←</option>
+                <option value={270}>{t("directions.270")} ↑</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <PositionEditor field="goals" label={t("goals")} />
-        <PositionEditor field="walls" label={t("walls")} />
-        <PositionEditor field="traps" label={t("traps")} />
-      </div>
-
+      {/* Sample Code */}
       <div className="space-y-2">
         <label className="block text-sm font-medium">{t("sampleCode")}</label>
         <textarea
@@ -381,6 +386,7 @@ export function ProblemForm() {
         />
       </div>
 
+      {/* Tags */}
       <div className="space-y-2">
         <label className="block text-sm font-medium">{t("tags")}</label>
         <input
@@ -392,9 +398,26 @@ export function ProblemForm() {
         />
       </div>
 
-      <Button type="submit" disabled={submitting} className="w-full">
-        {submitting ? t("submitting") : t("submit")}
-      </Button>
+      {/* Action Buttons */}
+      <div className="flex gap-4">
+        <Button
+          type="button"
+          variant="outline"
+          disabled={submitting}
+          onClick={(e) => handleSubmit(e, "draft")}
+          className="flex-1"
+        >
+          {submitting ? t("submitting") : t("saveDraft")}
+        </Button>
+        <Button
+          type="button"
+          disabled={submitting || !formData.title || problem.goals.length === 0}
+          onClick={(e) => handleSubmit(e, "published")}
+          className="flex-1"
+        >
+          {submitting ? t("submitting") : t("publish")}
+        </Button>
+      </div>
     </form>
   );
 }

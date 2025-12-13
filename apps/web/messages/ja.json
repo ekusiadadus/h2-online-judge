@@ -67,6 +67,20 @@
       "success": "コンパイル成功",
       "error": "コンパイルエラー",
       "waiting": "実行またはステップを押してコンパイル・実行してください"
+    },
+    "saveDraft": {
+      "button": "下書き保存",
+      "title": "問題を下書き保存",
+      "titleLabel": "問題タイトル",
+      "titlePlaceholder": "問題のタイトルを入力",
+      "descriptionLabel": "説明（任意）",
+      "descriptionPlaceholder": "問題の説明を入力",
+      "difficultyLabel": "難易度",
+      "save": "下書き保存",
+      "saving": "保存中...",
+      "success": "下書きを保存しました！",
+      "error": "下書きの保存に失敗しました",
+      "loginRequired": "下書き保存にはログインが必要です"
     }
   },
   "footer": {
@@ -97,10 +111,39 @@
     },
     "card": {
       "by": "作成者:"
+    },
+    "solve": {
+      "loginToSubmit": "提出するにはログインしてください",
+      "submitting": "提出中...",
+      "submit": "提出",
+      "accepted": "正解！",
+      "wrongAnswer": "不正解",
+      "ranking": "ランキング",
+      "noSubmissions": "まだ提出がありません",
+      "place": "順位",
+      "steps": "ステップ",
+      "bytes": "バイト",
+      "userName": "ユーザー名",
+      "date": "日付"
     }
   },
   "admin": {
     "problems": {
+      "list": {
+        "title": "問題管理",
+        "subtitle": "問題の下書きを管理",
+        "empty": "問題がまだありません",
+        "createNew": "新しい問題を作成",
+        "draft": "下書き",
+        "published": "公開中",
+        "edit": "編集",
+        "delete": "削除",
+        "publish": "公開",
+        "confirmDelete": "この問題を削除してもよろしいですか？"
+      },
+      "edit": {
+        "title": "問題を編集"
+      },
       "new": {
         "title": "新しい問題を作成",
         "form": {
@@ -132,9 +175,11 @@
           "tagsPlaceholder": "タグを入力（カンマ区切り）",
           "isPublic": "公開",
           "submit": "問題を作成",
-          "submitting": "作成中...",
-          "success": "問題を作成しました！",
-          "error": "問題の作成に失敗しました"
+          "submitting": "保存中...",
+          "success": "問題を保存しました！",
+          "error": "問題の保存に失敗しました",
+          "saveDraft": "下書き保存",
+          "publish": "公開"
         }
       }
     },
