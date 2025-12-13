@@ -334,10 +334,16 @@ export function Grid({
               ...getRotationStyle(agent.direction),
             }}
           >
-            {/* Direction indicator (arrow) */}
+            {/* Direction indicator (line pointing forward) */}
             <div
-              className="w-0 h-0 border-l-[4px] border-r-[4px] border-b-[7px] border-l-transparent border-r-transparent border-b-white"
-              style={{ marginTop: "-3px" }}
+              className="absolute bg-white rounded-full"
+              style={{
+                width: 3,
+                height: 8,
+                top: 1,
+                left: "50%",
+                transform: "translateX(-50%)",
+              }}
             />
           </div>
         ))}
