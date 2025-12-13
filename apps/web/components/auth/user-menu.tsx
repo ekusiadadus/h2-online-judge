@@ -39,7 +39,7 @@ export function UserMenu({ user, className }: UserMenuProps) {
     };
   }, []);
 
-  const displayName = user.name || user.email.split("@")[0];
+  const displayName = user.name || user.email.split("@")[0] || "U";
   const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
