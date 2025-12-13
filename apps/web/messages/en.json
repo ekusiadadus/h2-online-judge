@@ -78,5 +78,25 @@
     "profile": "Profile",
     "settings": "Settings",
     "admin": "Admin"
+  },
+  "problems": {
+    "title": "Problems",
+    "subtitle": "Solve programming challenges",
+    "empty": "No problems available yet",
+    "loading": "Loading problems...",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "detail": {
+      "description": "Description",
+      "sampleCode": "Sample Code",
+      "tryIt": "Try in Playground",
+      "back": "Back to Problems"
+    },
+    "card": {
+      "by": "by"
+    }
   }
 }
