@@ -3,6 +3,7 @@
 import { useTranslations, useLocale } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { AuthStatus } from "@/components/auth";
 
 /**
  * Header component with navigation and language switcher.
@@ -83,6 +84,11 @@ export function Header() {
           >
             EN
           </button>
+        </div>
+
+        {/* Auth Status */}
+        <div className="ml-4">
+          <AuthStatus />
         </div>
       </div>
     </header>

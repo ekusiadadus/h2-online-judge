@@ -71,5 +71,12 @@
   },
   "footer": {
     "copyright": "© 2025 ekusiadadus. All rights reserved."
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "profile": "Profile",
+    "settings": "Settings",
+    "admin": "Admin"
   }
 }
