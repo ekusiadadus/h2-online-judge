@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "./logout-button";
 
@@ -68,7 +69,16 @@ export function UserMenu({ user, className }: UserMenuProps) {
               </span>
             )}
           </div>
-          <div className="p-2">
+          <div className="p-2 space-y-1">
+            {user.role === "admin" && (
+              <Link
+                href="/admin/problems/new"
+                className="flex w-full items-center px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                + Create Problem
+              </Link>
+            )}
             <LogoutButton
               variant="ghost"
               size="sm"

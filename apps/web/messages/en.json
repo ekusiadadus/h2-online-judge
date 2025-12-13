@@ -98,5 +98,46 @@
     "card": {
       "by": "by"
     }
+  },
+  "admin": {
+    "problems": {
+      "new": {
+        "title": "Create New Problem",
+        "form": {
+          "title": "Title",
+          "titlePlaceholder": "Enter problem title",
+          "description": "Description",
+          "descriptionPlaceholder": "Enter problem description (supports markdown)",
+          "difficulty": "Difficulty",
+          "gridSize": "Grid Size",
+          "maxSteps": "Max Steps",
+          "startPosition": "Start Position",
+          "startX": "X",
+          "startY": "Y",
+          "startDirection": "Direction",
+          "directions": {
+            "0": "Right",
+            "90": "Down",
+            "180": "Left",
+            "270": "Up"
+          },
+          "goals": "Goals",
+          "walls": "Walls",
+          "traps": "Traps",
+          "addPosition": "Add",
+          "removePosition": "Remove",
+          "sampleCode": "Sample Code",
+          "sampleCodePlaceholder": "Enter sample H2 code",
+          "tags": "Tags",
+          "tagsPlaceholder": "Enter tags (comma separated)",
+          "isPublic": "Public",
+          "submit": "Create Problem",
+          "submitting": "Creating...",
+          "success": "Problem created successfully!",
+          "error": "Failed to create problem"
+        }
+      }
+    },
+    "unauthorized": "You need admin access to view this page"
   }
 }

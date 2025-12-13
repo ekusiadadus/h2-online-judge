@@ -98,5 +98,46 @@
     "card": {
       "by": "作成者:"
     }
+  },
+  "admin": {
+    "problems": {
+      "new": {
+        "title": "新しい問題を作成",
+        "form": {
+          "title": "タイトル",
+          "titlePlaceholder": "問題のタイトルを入力",
+          "description": "説明",
+          "descriptionPlaceholder": "問題の説明を入力（マークダウン対応）",
+          "difficulty": "難易度",
+          "gridSize": "グリッドサイズ",
+          "maxSteps": "最大ステップ数",
+          "startPosition": "開始位置",
+          "startX": "X",
+          "startY": "Y",
+          "startDirection": "方向",
+          "directions": {
+            "0": "右",
+            "90": "下",
+            "180": "左",
+            "270": "上"
+          },
+          "goals": "ゴール",
+          "walls": "壁",
+          "traps": "トラップ",
+          "addPosition": "追加",
+          "removePosition": "削除",
+          "sampleCode": "サンプルコード",
+          "sampleCodePlaceholder": "H2コードを入力",
+          "tags": "タグ",
+          "tagsPlaceholder": "タグを入力（カンマ区切り）",
+          "isPublic": "公開",
+          "submit": "問題を作成",
+          "submitting": "作成中...",
+          "success": "問題を作成しました！",
+          "error": "問題の作成に失敗しました"
+        }
+      }
+    },
+    "unauthorized": "このページを表示するには管理者権限が必要です"
   }
 }
