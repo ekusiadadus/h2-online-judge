@@ -58,7 +58,9 @@
     },
     "grid": {
       "title": "グリッド",
-      "editModeLabel": "(編集モード)"
+      "editModeLabel": "(編集モード)",
+      "targetsLabel": "ターゲット",
+      "allTargetsReached": "✓ すべてのターゲットに到達！"
     },
     "toolPalette": {
       "editMode": "編集モード",
@@ -81,7 +83,17 @@
       "title": "出力",
       "success": "コンパイル成功",
       "error": "コンパイルエラー",
-      "waiting": "実行またはステップを押してコンパイル・実行してください"
+      "waiting": "実行またはステップを押してコンパイル・実行してください",
+      "timeline": "タイムライン",
+      "timelineSteps": "{count}ステップ",
+      "step": "ステップ",
+      "agents": "エージェント",
+      "score": "スコア",
+      "bytesUnit": "バイト",
+      "lowerIsBetter": "(少ないほど良い)",
+      "points": "ポイント",
+      "successAllTargets": "成功！すべてのターゲットに到達！",
+      "failedTargetsRemaining": "失敗：残り{count}ターゲット"
     },
     "share": {
       "button": "共有",

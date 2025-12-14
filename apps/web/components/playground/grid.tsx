@@ -95,7 +95,7 @@ const Wall = memo(function Wall({ x, y }: WallProps) {
   return (
     <div
       data-testid="wall"
-      className="absolute"
+      className="absolute pointer-events-none"
       style={{
         left: x * CELL_SIZE + 2,
         top: y * CELL_SIZE + 2,
@@ -120,7 +120,7 @@ const Trap = memo(function Trap({ x, y }: TrapProps) {
   return (
     <div
       data-testid="trap"
-      className="absolute rounded-full"
+      className="absolute rounded-full pointer-events-none"
       style={{
         left: x * CELL_SIZE + 4,
         top: y * CELL_SIZE + 4,
@@ -147,7 +147,7 @@ const Goal = memo(function Goal({ x, y, isVisited }: GoalProps) {
     <div
       data-testid={isVisited ? "goal-visited" : "goal"}
       className={cn(
-        "absolute rounded-full border-2",
+        "absolute rounded-full border-2 pointer-events-none",
         isVisited
           ? "bg-green-500 border-green-600"
           : "bg-white border-gray-300"
@@ -194,7 +194,7 @@ const Agent = memo(function Agent({ id, x, y, direction }: AgentProps) {
   return (
     <div
       className={cn(
-        "absolute flex items-center justify-center transition-all duration-150",
+        "absolute flex items-center justify-center transition-all duration-150 pointer-events-none",
         AGENT_COLORS[id % AGENT_COLORS.length]
       )}
       style={{
@@ -353,6 +353,8 @@ export function Grid({
           state.direction = ((state.direction + 90) % 360) as Direction;
         } else if (command.type === "rotate_left") {
           state.direction = ((state.direction - 90 + 360) % 360) as Direction;
+        } else if (command.type === "wait") {
+          // no-op
         }
       }
     }
@@ -360,18 +362,22 @@ export function Grid({
     return { agentStates: states, pathHistory: paths };
   }, [program, currentStep, gridSize, startPosition, walls]);
 
+  // Calculate total grid pixel size
+  const gridPixelSize = gridSize * CELL_SIZE;
+
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-card p-4",
+        "rounded-lg border border-border bg-card p-4 overflow-auto",
         className
       )}
     >
       <div
         className="relative mx-auto"
         style={{
-          width: gridSize * CELL_SIZE,
-          height: gridSize * CELL_SIZE,
+          width: gridPixelSize,
+          height: gridPixelSize,
+          minWidth: gridPixelSize,
         }}
         role="img"
         aria-label="Robot grid"

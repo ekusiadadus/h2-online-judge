@@ -18,6 +18,8 @@ interface ControlPanelProps {
   showPath?: boolean;
   /** Callback when path toggle changes */
   onShowPathChange?: (show: boolean) => void;
+  /** Disable interactive controls (e.g., until compiler ready) */
+  disabled?: boolean;
 }
 
 const SPEED_OPTIONS = [0.5, 1, 2, 4];
@@ -38,6 +40,7 @@ export function ControlPanel({
   className,
   showPath = false,
   onShowPathChange,
+  disabled = false,
 }: ControlPanelProps) {
   const t = useTranslations("playground.controls");
 
@@ -50,19 +53,19 @@ export function ControlPanel({
     >
       {/* Run/Stop button - toggles based on running state */}
       {isRunning && onStop ? (
-        <Button onClick={onStop} variant="destructive" size="sm">
+        <Button onClick={onStop} variant="destructive" size="sm" disabled={disabled}>
           <Square className="w-4 h-4 mr-2" />
           {t("stop")}
         </Button>
       ) : (
-        <Button onClick={onRun} variant="default" size="sm">
+        <Button onClick={onRun} variant="default" size="sm" disabled={disabled}>
           <Play className="w-4 h-4 mr-2" />
           {t("run")}
         </Button>
       )}
 
       {/* Step button */}
-      <Button onClick={onStep} disabled={isRunning} variant="secondary" size="sm">
+      <Button onClick={onStep} disabled={isRunning || disabled} variant="secondary" size="sm">
         <StepForward className="w-4 h-4 mr-2" />
         {t("step")}
       </Button>

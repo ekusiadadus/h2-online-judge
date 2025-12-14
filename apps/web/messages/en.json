@@ -58,7 +58,9 @@
     },
     "grid": {
       "title": "Grid",
-      "editModeLabel": "(Edit Mode)"
+      "editModeLabel": "(Edit Mode)",
+      "targetsLabel": "Targets",
+      "allTargetsReached": "✓ All targets reached!"
     },
     "toolPalette": {
       "editMode": "Edit Mode",
@@ -81,7 +83,17 @@
       "title": "Output",
       "success": "Compile successful",
       "error": "Compile error",
-      "waiting": "Press Run or Step to compile and execute"
+      "waiting": "Press Run or Step to compile and execute",
+      "timeline": "Timeline",
+      "timelineSteps": "{count} steps",
+      "step": "Step",
+      "agents": "Agents",
+      "score": "Score",
+      "bytesUnit": "bytes",
+      "lowerIsBetter": "(lower is better)",
+      "points": "Points",
+      "successAllTargets": "Success! All targets reached!",
+      "failedTargetsRemaining": "Failed: {count} target(s) remaining"
     },
     "share": {
       "button": "Share",

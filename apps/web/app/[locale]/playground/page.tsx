@@ -145,6 +145,41 @@ function PlaygroundContent() {
     setShareLoaded(true);
   }, [searchParams, shareLoaded]);
 
+  // Load from localStorage when no share code provided
+  useEffect(() => {
+    if (!shareLoaded) return;
+    try {
+      const hasShare = !!searchParams.get("s");
+      if (hasShare) return;
+      const localeFromPath = typeof window !== "undefined" ? (window.location.pathname.split("/")[1] || "ja") : "ja";
+      const key = `h2.playground.v1.${localeFromPath}`;
+      const raw = typeof window !== "undefined" ? window.localStorage.getItem(key) : null;
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { code?: string; problem?: Problem };
+      if (typeof parsed.code === "string") setCode(parsed.code);
+      if (parsed.problem) setProblem(parsed.problem);
+    } catch (e) {
+      console.error("[autosave] failed to load:", e);
+    }
+  }, [shareLoaded, searchParams]);
+
+  // Autosave code/problem to localStorage (debounced)
+  useEffect(() => {
+    if (!shareLoaded) return;
+    const localeFromPath = typeof window !== "undefined" ? (window.location.pathname.split("/")[1] || "ja") : "ja";
+    const key = `h2.playground.v1.${localeFromPath}`;
+    const handle = setTimeout(() => {
+      try {
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(key, JSON.stringify({ code, problem }));
+        }
+      } catch (e) {
+        console.error("[autosave] failed to save:", e);
+      }
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [code, problem, shareLoaded]);
+
   // Handle code compilation using real h2lang WASM
   const handleCompile = useCallback(() => {
     if (!wasmReady) {
@@ -186,6 +221,12 @@ function PlaygroundContent() {
     const startPos = problem.startPosition;
     const visited: Position[] = [];
 
+    // Create a map from agent_id to state index (agent IDs may not be sequential)
+    const agentIdToIndex = new Map<number, number>();
+    program.agents.forEach((agent, index) => {
+      agentIdToIndex.set(agent.id, index);
+    });
+
     // Track agent positions through simulation
     const agentStates = program.agents.map(() => ({
       x: startPos.x,
@@ -207,7 +248,9 @@ function PlaygroundContent() {
       const timelineEntry = program.timeline[step];
       if (!timelineEntry) continue;
       for (const agentCommand of timelineEntry.agent_commands) {
-        const state = agentStates[agentCommand.agent_id];
+        const stateIndex = agentIdToIndex.get(agentCommand.agent_id);
+        if (stateIndex === undefined) continue;
+        const state = agentStates[stateIndex];
         if (!state) continue;
 
         const command = agentCommand.command;
@@ -244,6 +287,8 @@ function PlaygroundContent() {
           state.direction = ((state.direction + 90) % 360) as Direction;
         } else if (command.type === "rotate_left") {
           state.direction = ((state.direction - 90 + 360) % 360) as Direction;
+        } else if (command.type === "wait") {
+          // no-op
         }
       }
     }
@@ -494,6 +539,7 @@ function PlaygroundContent() {
           speed={speed}
           showPath={showPath}
           onShowPathChange={setShowPath}
+          disabled={!wasmReady}
         />
       </div>
 
@@ -501,15 +547,17 @@ function PlaygroundContent() {
       {problem.goals.length > 0 && (
         <div className="flex items-center gap-4 text-sm">
           <span className="text-foreground">
-            Targets: <span className="font-bold">{visitedGoals.length}</span> / {problem.goals.length}
+            {t("grid.targetsLabel", { defaultValue: "Targets" })}: <span className="font-bold">{visitedGoals.length}</span> / {problem.goals.length}
           </span>
           {allGoalsVisited && (
             <span className="text-green-600 font-medium">
-              ✓ All targets reached!
+              {t("grid.allTargetsReached", { defaultValue: "✓ All targets reached!" })}
             </span>
           )}
         </div>
       )}
+
+      
 
       {/* Main content area - 3 column layout with custom widths */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

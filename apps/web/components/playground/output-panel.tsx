@@ -10,6 +10,7 @@ import {
   ArrowUp,
   RotateCw,
   RotateCcw,
+  Pause,
   Trophy,
   AlertTriangle,
   Check,
@@ -43,6 +44,8 @@ function CommandIcon({ type }: { type: CommandType }) {
       return <RotateCw className="w-3 h-3" />;
     case "rotate_left":
       return <RotateCcw className="w-3 h-3" />;
+    case "wait":
+      return <Pause className="w-3 h-3" />;
     default:
       return null;
   }
@@ -59,6 +62,8 @@ function getCommandShortLabel(type: CommandType): string {
       return "r";
     case "rotate_left":
       return "l";
+    case "wait":
+      return "·";
     default:
       return type;
   }
@@ -75,6 +80,8 @@ function getCommandLabel(type: CommandType): string {
       return "rotate_right";
     case "rotate_left":
       return "rotate_left";
+    case "wait":
+      return "wait";
     default:
       return type;
   }
@@ -161,7 +168,12 @@ interface VirtualizedTimelineProps {
   currentStep: number;
 }
 
-function VirtualizedTimeline({ timeline, currentStep }: VirtualizedTimelineProps) {
+interface VirtualizedTimelineExtendedProps extends VirtualizedTimelineProps {
+  timelineLabel: string;
+  stepsLabel: string;
+}
+
+function VirtualizedTimeline({ timeline, currentStep, timelineLabel, stepsLabel }: VirtualizedTimelineExtendedProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const totalItems = timeline.length;
 
@@ -200,7 +212,7 @@ function VirtualizedTimeline({ timeline, currentStep }: VirtualizedTimelineProps
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <h3 className="text-xs font-medium text-muted-foreground mb-1">
-        Timeline ({totalItems} steps)
+        {timelineLabel} ({stepsLabel})
       </h3>
       <div
         ref={containerRef}
@@ -295,10 +307,10 @@ export function OutputPanel({
               </div>
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>
-                  Step: <span className="font-bold text-foreground">{currentStep}</span> / {maxSteps}
+                  {t("step")}: <span className="font-bold text-foreground">{currentStep}</span> / {maxSteps}
                 </span>
                 <span>
-                  Agents: {program.agents.length}
+                  {t("agents")}: {program.agents.length}
                 </span>
               </div>
             </div>
@@ -306,14 +318,14 @@ export function OutputPanel({
             {/* Byte count display - CODE GOLF SCORE */}
             <div className="flex items-center gap-3 py-2 px-3 rounded-lg bg-accent/50 border border-border">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-medium text-muted-foreground">Score:</span>
+                <span className="text-xs font-medium text-muted-foreground">{t("score")}:</span>
                 <span className="text-2xl font-bold text-primary tabular-nums">
                   {byteCount}
                 </span>
-                <span className="text-xs text-muted-foreground">bytes</span>
+                <span className="text-xs text-muted-foreground">{t("bytesUnit")}</span>
               </div>
               <div className="text-[10px] text-muted-foreground/70">
-                (lower is better)
+                {t("lowerIsBetter")}
               </div>
             </div>
 
@@ -321,7 +333,7 @@ export function OutputPanel({
             {hasGoals && (
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">
-                  Points: <span className="font-bold text-foreground">{visitedGoals}</span> / {totalGoals}
+                  {t("points")}: <span className="font-bold text-foreground">{visitedGoals}</span> / {totalGoals}
                 </span>
               </div>
             )}
@@ -335,7 +347,7 @@ export function OutputPanel({
                     className="flex items-center gap-2 text-success font-bold"
                   >
                     <Trophy className="w-4 h-4" />
-                    <span>Success! All targets reached!</span>
+                    <span>{t("successAllTargets")}</span>
                   </div>
                 ) : (
                   <div
@@ -343,7 +355,7 @@ export function OutputPanel({
                     className="flex items-center gap-2 text-destructive font-bold"
                   >
                     <AlertTriangle className="w-4 h-4" />
-                    <span>Failed: {totalGoals - visitedGoals} target(s) remaining</span>
+                    <span>{t("failedTargetsRemaining", { count: totalGoals - visitedGoals })}</span>
                   </div>
                 )}
               </div>
@@ -354,6 +366,8 @@ export function OutputPanel({
               <VirtualizedTimeline
                 timeline={program.timeline}
                 currentStep={currentStep}
+                timelineLabel={t("timeline")}
+                stepsLabel={t("timelineSteps", { count: program.timeline.length })}
               />
             )}
           </div>

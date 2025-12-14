@@ -199,6 +199,12 @@ export default function ProblemSolvePage({ params }: PageProps) {
     const startPos = problem.startPosition;
     const visited: Position[] = [];
 
+    // Create a map from agent_id to state index (agent IDs may not be sequential)
+    const agentIdToIndex = new Map<number, number>();
+    program.agents.forEach((agent, index) => {
+      agentIdToIndex.set(agent.id, index);
+    });
+
     const agentStates = program.agents.map(() => ({
       x: startPos.x,
       y: startPos.y,
@@ -219,7 +225,9 @@ export default function ProblemSolvePage({ params }: PageProps) {
       const timelineEntry = program.timeline[step];
       if (!timelineEntry) continue;
       for (const agentCommand of timelineEntry.agent_commands) {
-        const state = agentStates[agentCommand.agent_id];
+        const stateIndex = agentIdToIndex.get(agentCommand.agent_id);
+        if (stateIndex === undefined) continue;
+        const state = agentStates[stateIndex];
         if (!state) continue;
 
         const command = agentCommand.command;
@@ -371,6 +379,12 @@ export default function ProblemSolvePage({ params }: PageProps) {
       const visited: Position[] = [];
       let finalStep = 0;
 
+      // Create a map from agent_id to state index (agent IDs may not be sequential)
+      const agentIdToIndex = new Map<number, number>();
+      program.agents.forEach((agent, index) => {
+        agentIdToIndex.set(agent.id, index);
+      });
+
       const agentStates = program.agents.map(() => ({
         x: startPos.x,
         y: startPos.y,
@@ -393,7 +407,9 @@ export default function ProblemSolvePage({ params }: PageProps) {
         if (!timelineEntry) continue;
 
         for (const agentCommand of timelineEntry.agent_commands) {
-          const state = agentStates[agentCommand.agent_id];
+          const stateIndex = agentIdToIndex.get(agentCommand.agent_id);
+          if (stateIndex === undefined) continue;
+          const state = agentStates[stateIndex];
           if (!state) continue;
 
           const command = agentCommand.command;
