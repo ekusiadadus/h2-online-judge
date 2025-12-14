@@ -12,6 +12,8 @@ import {
   RotateCcw,
   Trophy,
   AlertTriangle,
+  Check,
+  Circle,
 } from "lucide-react";
 
 // P1: Virtual scrolling configuration
@@ -99,36 +101,47 @@ const TimelineRow = memo(function TimelineRow({
     <div
       data-testid={`timeline-step-${index}`}
       className={cn(
-        "flex items-center gap-2 px-2 py-1 rounded text-xs transition-colors",
+        "flex items-center gap-1 px-1 py-0.5 rounded text-xs transition-colors",
         isCurrent && "bg-primary/20 font-bold border-l-2 border-primary",
-        isCompleted && "text-muted-foreground",
+        isCompleted && "text-success",
         isPending && "text-muted-foreground/60"
       )}
       style={{ height: ROW_HEIGHT }}
     >
-      <span className="w-6 text-right tabular-nums">{index}</span>
-      <span className="text-muted-foreground">:</span>
+      {/* Status indicator: checkmark for completed, circle for current/pending */}
+      <span className="w-4 flex-shrink-0 flex items-center justify-center">
+        {isCompleted ? (
+          <Check className="w-3 h-3 text-success" />
+        ) : isCurrent ? (
+          <Circle className="w-3 h-3 text-primary fill-primary" />
+        ) : (
+          <Circle className="w-2.5 h-2.5 text-muted-foreground/40" />
+        )}
+      </span>
+      {/* Step number - left aligned */}
+      <span className="w-8 tabular-nums text-left">{index}</span>
+      {/* Commands */}
       <div className="flex items-center gap-1 flex-wrap">
         {agentCommands.map((agentCmd, cmdIndex) => (
           <span
             key={cmdIndex}
             className={cn(
-              "inline-flex items-center gap-1 px-1.5 py-0.5 rounded",
-              isCurrent ? "bg-primary/30" : "bg-muted"
+              "inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[10px]",
+              isCurrent ? "bg-primary/30" : isCompleted ? "bg-success/20" : "bg-muted"
             )}
           >
-            <span className="text-primary font-bold text-xs">
+            <span className={cn(
+              "font-bold",
+              isCurrent ? "text-primary" : isCompleted ? "text-success" : "text-muted-foreground"
+            )}>
               {getCommandShortLabel(agentCmd.command.type)}
             </span>
             <CommandIcon type={agentCmd.command.type} />
-            <span className="text-[10px]">
-              {getCommandLabel(agentCmd.command.type)}
-            </span>
           </span>
         ))}
       </div>
       {isCurrent && (
-        <span className="ml-auto text-primary text-[10px]">current</span>
+        <span className="ml-auto text-primary text-[10px] font-medium">▶</span>
       )}
     </div>
   );
