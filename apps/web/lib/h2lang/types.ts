@@ -34,7 +34,7 @@ export interface Problem {
 }
 
 /** Command types that an agent can execute */
-export type CommandType = "straight" | "rotate_right" | "rotate_left";
+export type CommandType = "straight" | "rotate_right" | "rotate_left" | "wait";
 
 /** A single command for an agent */
 export interface Command {
