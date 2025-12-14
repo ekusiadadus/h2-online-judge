@@ -10,7 +10,7 @@ interface Problem {
   description: string;
   difficulty: "easy" | "medium" | "hard";
   gridSize: number;
-  createdAt: string;
+  createdAt: Date | string;
 }
 
 interface ProblemCardProps {

@@ -1,6 +1,10 @@
+import { cache } from "react";
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { ProblemCard } from "@/components/problems";
+import { db } from "@/db";
+import { problems } from "@/db/schema";
+import { eq, and, desc } from "drizzle-orm";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -12,26 +16,29 @@ interface Problem {
   description: string;
   difficulty: "easy" | "medium" | "hard";
   gridSize: number;
-  createdAt: string;
+  createdAt: Date;
 }
 
-async function getProblems(): Promise<Problem[]> {
-  try {
-    const baseUrl = process.env.APP_BASE_URL || "http://localhost:4000";
-    const res = await fetch(`${baseUrl}/api/problems`, {
-      cache: "no-store",
-    });
+/**
+ * Fetch published problems directly from database.
+ * Uses React cache() for request deduplication.
+ */
+const getProblems = cache(async (): Promise<Problem[]> => {
+  const results = await db.query.problems.findMany({
+    where: and(eq(problems.isPublic, true), eq(problems.status, "published")),
+    orderBy: [desc(problems.createdAt)],
+    columns: {
+      id: true,
+      title: true,
+      description: true,
+      difficulty: true,
+      gridSize: true,
+      createdAt: true,
+    },
+  });
 
-    if (!res.ok) {
-      return [];
-    }
-
-    const data = await res.json();
-    return data.data || [];
-  } catch {
-    return [];
-  }
-}
+  return results;
+});
 
 export default async function ProblemsPage({ params }: Props) {
   const { locale } = await params;
