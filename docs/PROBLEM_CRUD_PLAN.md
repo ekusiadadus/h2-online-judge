@@ -30,21 +30,24 @@
 
 ```bash
 # Turso (existing - will be mapped in code)
-TURSO_URL=libsql://...
-TURSO_SECRET=eyJ...
+TURSO_URL=libsql://<your-db>.turso.io
+# Use either TURSO_AUTH_TOKEN or TURSO_SECRET depending on your setup
+TURSO_AUTH_TOKEN=<turso_auth_token>
+TURSO_SECRET=<turso_auth_token>
 
 # Upstash Redis (existing)
-UPSTASH_REDIS_REST_URL=https://...
-UPSTASH_REDIS_REST_TOKEN=...
+UPSTASH_REDIS_REST_URL=https://<your-upstash>.upstash.io
+UPSTASH_REDIS_REST_TOKEN=<upstash_redis_rest_token>
 
 # Auth0 (existing)
 AUTH0_DOMAIN=dev-xxx.us.auth0.com
-AUTH0_CLIENT_ID=...
-AUTH0_CLIENT_SECRET=...
+AUTH0_CLIENT_ID=<auth0_client_id>
+AUTH0_CLIENT_SECRET=<auth0_client_secret>
 
 # Auth0 (NEW - must add)
 AUTH0_SECRET=<generate with: openssl rand -hex 32>
-APP_BASE_URL=http://localhost:4000
+AUTH0_BASE_URL=http://localhost:4000
+AUTH0_ISSUER_BASE_URL=https://<your-tenant>.auth0.com
 
 # Admin (NEW - for initial admin setup)
 ADMIN_EMAILS=admin@example.com,another@example.com

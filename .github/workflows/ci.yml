@@ -11,6 +11,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run secret scan
+        run: bash scripts/secret-scan.sh
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
