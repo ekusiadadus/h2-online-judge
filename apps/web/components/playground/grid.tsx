@@ -33,6 +33,8 @@ interface AgentState {
 const GRID_SIZE = 25;
 /** Cell size in pixels (25 * 24 = 600px total) */
 const CELL_SIZE = 24;
+/** Dot size for grid intersections */
+const DOT_SIZE = 4;
 /** P2: Empty walls array - stable reference to prevent unnecessary re-renders */
 const EMPTY_WALLS: Position[] = [];
 
@@ -47,7 +49,7 @@ function hasPosition(positions: Position[], x: number, y: number): boolean {
 // P0: Memoized Cell Components for Performance
 // ============================================
 
-interface GridCellProps {
+interface GridDotProps {
   x: number;
   y: number;
   editMode: boolean;
@@ -55,10 +57,10 @@ interface GridCellProps {
 }
 
 /**
- * Memoized grid cell - prevents 625 cells from re-rendering on every step change.
- * Only re-renders when editMode or onClick changes.
+ * Memoized grid dot - renders a small circle at grid intersections.
+ * Dot-style design matching Herbert Online Judge aesthetic.
  */
-const GridCell = memo(function GridCell({ x, y, editMode, onClick }: GridCellProps) {
+const GridDot = memo(function GridDot({ x, y, editMode, onClick }: GridDotProps) {
   const handleClick = useCallback(() => {
     if (editMode && onClick) {
       onClick(x, y);
@@ -67,16 +69,44 @@ const GridCell = memo(function GridCell({ x, y, editMode, onClick }: GridCellPro
 
   return (
     <div
-      data-testid="grid-cell"
+      data-testid="grid-dot"
       className={cn(
-        "absolute border border-grid-line bg-background",
-        editMode && "cursor-pointer hover:bg-muted"
+        "absolute rounded-full bg-grid-dot",
+        editMode && "cursor-pointer"
       )}
+      style={{
+        left: x * CELL_SIZE + CELL_SIZE / 2 - DOT_SIZE / 2,
+        top: y * CELL_SIZE + CELL_SIZE / 2 - DOT_SIZE / 2,
+        width: DOT_SIZE,
+        height: DOT_SIZE,
+      }}
+      onClick={handleClick}
+    />
+  );
+});
+
+/**
+ * Clickable cell area for edit mode (invisible but clickable).
+ */
+const GridCellArea = memo(function GridCellArea({ x, y, editMode, onClick }: GridDotProps) {
+  const handleClick = useCallback(() => {
+    if (editMode && onClick) {
+      onClick(x, y);
+    }
+  }, [editMode, onClick, x, y]);
+
+  if (!editMode) return null;
+
+  return (
+    <div
+      data-testid="grid-cell"
+      className="absolute cursor-pointer hover:bg-muted-foreground/10"
       style={{
         left: x * CELL_SIZE,
         top: y * CELL_SIZE,
         width: CELL_SIZE,
         height: CELL_SIZE,
+        zIndex: 1,
       }}
       onClick={handleClick}
     />
@@ -95,14 +125,13 @@ const Wall = memo(function Wall({ x, y }: WallProps) {
   return (
     <div
       data-testid="wall"
-      className="absolute pointer-events-none"
+      className="absolute pointer-events-none bg-grid-obstacle"
       style={{
         left: x * CELL_SIZE + 2,
         top: y * CELL_SIZE + 2,
         width: CELL_SIZE - 4,
         height: CELL_SIZE - 4,
         zIndex: 10,
-        backgroundColor: "#1f2937",
       }}
     />
   );
@@ -114,20 +143,25 @@ interface TrapProps {
 }
 
 /**
- * Memoized trap component - static, never re-renders unless position changes.
+ * Trap size - same as goal for consistency.
+ */
+const TRAP_SIZE = 12;
+
+/**
+ * Memoized trap component - renders as filled black circle (●).
+ * HOJ-style trap marker.
  */
 const Trap = memo(function Trap({ x, y }: TrapProps) {
   return (
     <div
       data-testid="trap"
-      className="absolute rounded-full pointer-events-none"
+      className="absolute rounded-full pointer-events-none bg-foreground"
       style={{
-        left: x * CELL_SIZE + 4,
-        top: y * CELL_SIZE + 4,
-        width: CELL_SIZE - 8,
-        height: CELL_SIZE - 8,
+        left: x * CELL_SIZE + CELL_SIZE / 2 - TRAP_SIZE / 2,
+        top: y * CELL_SIZE + CELL_SIZE / 2 - TRAP_SIZE / 2,
+        width: TRAP_SIZE,
+        height: TRAP_SIZE,
         zIndex: 10,
-        backgroundColor: "#9ca3af",
       }}
     />
   );
@@ -140,24 +174,30 @@ interface GoalProps {
 }
 
 /**
- * Memoized goal component - only re-renders when visited state changes.
+ * Goal size - larger circle for dot-style design.
+ */
+const GOAL_SIZE = 16;
+
+/**
+ * Memoized goal component - renders as HOJ-style circle.
+ * Unvisited: white circle with black outline (○)
+ * Visited: green filled circle
  */
 const Goal = memo(function Goal({ x, y, isVisited }: GoalProps) {
   return (
     <div
       data-testid={isVisited ? "goal-visited" : "goal"}
       className={cn(
-        "absolute rounded-full border-2 pointer-events-none",
-        isVisited
-          ? "bg-green-500 border-green-600"
-          : "bg-white border-gray-300"
+        "absolute rounded-full pointer-events-none",
+        isVisited ? "bg-success" : "bg-background"
       )}
       style={{
-        left: x * CELL_SIZE + 5,
-        top: y * CELL_SIZE + 5,
-        width: CELL_SIZE - 10,
-        height: CELL_SIZE - 10,
+        left: x * CELL_SIZE + CELL_SIZE / 2 - GOAL_SIZE / 2,
+        top: y * CELL_SIZE + CELL_SIZE / 2 - GOAL_SIZE / 2,
+        width: GOAL_SIZE,
+        height: GOAL_SIZE,
         zIndex: 15,
+        border: isVisited ? "none" : "3px solid hsl(var(--foreground))",
       }}
     />
   );
@@ -263,21 +303,41 @@ export function Grid({
   // P2: Stable walls reference (empty array is stable, problem.walls is from props)
   const walls = problem?.walls ?? EMPTY_WALLS;
 
-  // P2: Stable callback reference for GridCell onClick
+  // P2: Stable callback reference for GridDot onClick
   const handleCellClick = useCallback((x: number, y: number) => {
     if (editMode && onCellClick) {
       onCellClick(x, y);
     }
   }, [editMode, onCellClick]);
 
-  // P0: Memoized static grid cells - only re-renders when gridSize or editMode changes
-  const gridCells = useMemo(() => {
+  // P0: Memoized static grid dots - only re-renders when gridSize or editMode changes
+  const gridDots = useMemo(() => {
+    const dots: React.ReactElement[] = [];
+    for (let y = 0; y < gridSize; y++) {
+      for (let x = 0; x < gridSize; x++) {
+        dots.push(
+          <GridDot
+            key={`dot-${x}-${y}`}
+            x={x}
+            y={y}
+            editMode={editMode}
+            onClick={onCellClick ? handleCellClick : undefined}
+          />
+        );
+      }
+    }
+    return dots;
+  }, [gridSize, editMode, handleCellClick, onCellClick]);
+
+  // Clickable areas for edit mode
+  const editCells = useMemo(() => {
+    if (!editMode) return null;
     const cells: React.ReactElement[] = [];
     for (let y = 0; y < gridSize; y++) {
       for (let x = 0; x < gridSize; x++) {
         cells.push(
-          <GridCell
-            key={`${x}-${y}`}
+          <GridCellArea
+            key={`cell-${x}-${y}`}
             x={x}
             y={y}
             editMode={editMode}
@@ -382,15 +442,18 @@ export function Grid({
         role="img"
         aria-label="Robot grid"
       >
-        {/* P0: Static layer - Grid cells (memoized, never re-renders during animation) */}
-        {gridCells}
+        {/* Edit mode clickable areas */}
+        {editCells}
+
+        {/* P0: Static layer - Grid dots (memoized, never re-renders during animation) */}
+        {gridDots}
 
         {/* Path trails (SVG) */}
         {showPath && pathHistory.length > 0 && (
           <svg
             className="absolute inset-0 pointer-events-none"
-            width={gridSize * CELL_SIZE}
-            height={gridSize * CELL_SIZE}
+            width={gridPixelSize}
+            height={gridPixelSize}
             style={{ zIndex: 5 }}
           >
             {pathHistory.map((path, agentIndex) => {

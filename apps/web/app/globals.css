@@ -88,6 +88,7 @@
 
   /* ===== Grid Colors ===== */
   --grid-line: 207 25% 88%;
+  --grid-dot: 207 20% 70%;
   --grid-obstacle: 207 20% 25%;
   --grid-path: 207 40% 70%;
   --grid-goal: 142 65% 38%;
@@ -178,6 +179,7 @@
 
   /* Grid Colors */
   --grid-line: 207 20% 22%;
+  --grid-dot: 207 15% 45%;
   --grid-obstacle: 207 15% 75%;
   --grid-path: 207 40% 45%;
   --grid-goal: 142 65% 45%;
@@ -302,6 +304,9 @@ body {
   .border-border {
     border-color: hsl(var(--border));
   }
+  .border-foreground {
+    border-color: hsl(var(--foreground));
+  }
   .border-input {
     border-color: hsl(var(--input));
   }
@@ -359,6 +364,7 @@ body {
 
   /* Grid utilities */
   .bg-grid-line { background-color: hsl(var(--grid-line)); }
+  .bg-grid-dot { background-color: hsl(var(--grid-dot)); }
   .bg-grid-obstacle { background-color: hsl(var(--grid-obstacle)); }
   .bg-grid-path { background-color: hsl(var(--grid-path)); }
   .bg-grid-goal { background-color: hsl(var(--grid-goal)); }
