@@ -259,7 +259,7 @@ export default async function Image({ searchParams }: Props) {
               color: "#6b7280",
             }}
           >
-            h2-online-judge.vercel.app
+            h2-online-judge-web.vercel.app
           </div>
         </div>
       </div>

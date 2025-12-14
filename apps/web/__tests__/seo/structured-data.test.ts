@@ -8,7 +8,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
  */
 
 // Mock environment variables
-vi.stubEnv("NEXT_PUBLIC_BASE_URL", "https://h2-online-judge.vercel.app");
+vi.stubEnv("NEXT_PUBLIC_BASE_URL", "https://h2-online-judge-web.vercel.app");
 
 describe("Structured Data Generators", () => {
   beforeEach(() => {
@@ -120,7 +120,7 @@ describe("Structured Data Generators", () => {
       );
       const schema = generateOrganizationSchema();
 
-      expect(schema.url).toBe("https://h2-online-judge.vercel.app");
+      expect(schema.url).toBe("https://h2-online-judge-web.vercel.app");
     });
   });
 

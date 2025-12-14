@@ -9,7 +9,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock environment variables
 const mockEnv = {
-  NEXT_PUBLIC_BASE_URL: "https://h2-online-judge.vercel.app",
+  NEXT_PUBLIC_BASE_URL: "https://h2-online-judge-web.vercel.app",
   VERCEL_ENV: "production",
 };
 
@@ -24,7 +24,7 @@ describe("SEO Metadata Helpers", () => {
   describe("getBaseUrl", () => {
     it("returns NEXT_PUBLIC_BASE_URL when set", async () => {
       const { getBaseUrl } = await import("../../lib/seo/metadata");
-      expect(getBaseUrl()).toBe("https://h2-online-judge.vercel.app");
+      expect(getBaseUrl()).toBe("https://h2-online-judge-web.vercel.app");
     });
 
     it("returns fallback URL when env is not set", async () => {
@@ -32,7 +32,7 @@ describe("SEO Metadata Helpers", () => {
       // Re-import to get fresh module
       vi.resetModules();
       const { getBaseUrl } = await import("../../lib/seo/metadata");
-      expect(getBaseUrl()).toBe("https://h2-online-judge.vercel.app");
+      expect(getBaseUrl()).toBe("https://h2-online-judge-web.vercel.app");
     });
   });
 
@@ -40,21 +40,21 @@ describe("SEO Metadata Helpers", () => {
     it("generates correct canonical URL for root path", async () => {
       const { getCanonicalUrl } = await import("../../lib/seo/metadata");
       expect(getCanonicalUrl("ja", "")).toBe(
-        "https://h2-online-judge.vercel.app/ja"
+        "https://h2-online-judge-web.vercel.app/ja"
       );
     });
 
     it("generates correct canonical URL with path", async () => {
       const { getCanonicalUrl } = await import("../../lib/seo/metadata");
       expect(getCanonicalUrl("en", "/playground")).toBe(
-        "https://h2-online-judge.vercel.app/en/playground"
+        "https://h2-online-judge-web.vercel.app/en/playground"
       );
     });
 
     it("handles path without leading slash", async () => {
       const { getCanonicalUrl } = await import("../../lib/seo/metadata");
       expect(getCanonicalUrl("ja", "problems")).toBe(
-        "https://h2-online-judge.vercel.app/ja/problems"
+        "https://h2-online-judge-web.vercel.app/ja/problems"
       );
     });
   });
@@ -74,13 +74,13 @@ describe("SEO Metadata Helpers", () => {
       const alternates = getAlternateLanguages("/playground");
 
       expect(alternates.ja).toBe(
-        "https://h2-online-judge.vercel.app/ja/playground"
+        "https://h2-online-judge-web.vercel.app/ja/playground"
       );
       expect(alternates.en).toBe(
-        "https://h2-online-judge.vercel.app/en/playground"
+        "https://h2-online-judge-web.vercel.app/en/playground"
       );
       expect(alternates["x-default"]).toBe(
-        "https://h2-online-judge.vercel.app/playground"
+        "https://h2-online-judge-web.vercel.app/playground"
       );
     });
 
@@ -88,10 +88,10 @@ describe("SEO Metadata Helpers", () => {
       const { getAlternateLanguages } = await import("../../lib/seo/metadata");
       const alternates = getAlternateLanguages("");
 
-      expect(alternates.ja).toBe("https://h2-online-judge.vercel.app/ja");
-      expect(alternates.en).toBe("https://h2-online-judge.vercel.app/en");
+      expect(alternates.ja).toBe("https://h2-online-judge-web.vercel.app/ja");
+      expect(alternates.en).toBe("https://h2-online-judge-web.vercel.app/en");
       expect(alternates["x-default"]).toBe(
-        "https://h2-online-judge.vercel.app"
+        "https://h2-online-judge-web.vercel.app"
       );
     });
   });

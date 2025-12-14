@@ -7,6 +7,8 @@
 
 > Visual, fast, and educational. H2 Online Judge lets you control robots with a tiny language and watch them execute step‑by‑step — built with Rust/WebAssembly and a modern React/Next.js UI.
 
+**[Live Demo](https://h2-online-judge-web.vercel.app/)**
+
 Status: Alpha — APIs and UI may change.
 
 ## Features
