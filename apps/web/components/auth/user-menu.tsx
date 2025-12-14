@@ -10,6 +10,7 @@ interface User {
   id: string;
   email: string;
   name: string | null;
+  username: string | null;
   role: "user" | "admin";
 }
 
@@ -40,7 +41,7 @@ export function UserMenu({ user, className }: UserMenuProps) {
     };
   }, []);
 
-  const displayName = user.name || user.email.split("@")[0] || "U";
+  const displayName = user.username || user.name || user.email.split("@")[0] || "U";
   const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
@@ -70,6 +71,13 @@ export function UserMenu({ user, className }: UserMenuProps) {
             )}
           </div>
           <div className="p-2 space-y-1">
+            <Link
+              href="/profile"
+              className="flex w-full items-center px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              {t("profile")}
+            </Link>
             {user.role === "admin" && (
               <Link
                 href="/admin/problems/new"
