@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import React, { useMemo, memo, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import type { Program, Problem, Position, Direction } from "@/lib/h2lang/types";
 
@@ -33,6 +33,8 @@ interface AgentState {
 const GRID_SIZE = 25;
 /** Cell size in pixels (25 * 24 = 600px total) */
 const CELL_SIZE = 24;
+/** P2: Empty walls array - stable reference to prevent unnecessary re-renders */
+const EMPTY_WALLS: Position[] = [];
 
 /**
  * Check if a position is in a list of positions.
@@ -40,6 +42,195 @@ const CELL_SIZE = 24;
 function hasPosition(positions: Position[], x: number, y: number): boolean {
   return positions.some((p) => p.x === x && p.y === y);
 }
+
+// ============================================
+// P0: Memoized Cell Components for Performance
+// ============================================
+
+interface GridCellProps {
+  x: number;
+  y: number;
+  editMode: boolean;
+  onClick?: (x: number, y: number) => void;
+}
+
+/**
+ * Memoized grid cell - prevents 625 cells from re-rendering on every step change.
+ * Only re-renders when editMode or onClick changes.
+ */
+const GridCell = memo(function GridCell({ x, y, editMode, onClick }: GridCellProps) {
+  const handleClick = useCallback(() => {
+    if (editMode && onClick) {
+      onClick(x, y);
+    }
+  }, [editMode, onClick, x, y]);
+
+  return (
+    <div
+      data-testid="grid-cell"
+      className={cn(
+        "absolute border border-grid-line bg-background",
+        editMode && "cursor-pointer hover:bg-muted"
+      )}
+      style={{
+        left: x * CELL_SIZE,
+        top: y * CELL_SIZE,
+        width: CELL_SIZE,
+        height: CELL_SIZE,
+      }}
+      onClick={handleClick}
+    />
+  );
+});
+
+interface WallProps {
+  x: number;
+  y: number;
+}
+
+/**
+ * Memoized wall component - static, never re-renders unless position changes.
+ */
+const Wall = memo(function Wall({ x, y }: WallProps) {
+  return (
+    <div
+      data-testid="wall"
+      className="absolute"
+      style={{
+        left: x * CELL_SIZE + 2,
+        top: y * CELL_SIZE + 2,
+        width: CELL_SIZE - 4,
+        height: CELL_SIZE - 4,
+        zIndex: 10,
+        backgroundColor: "#1f2937",
+      }}
+    />
+  );
+});
+
+interface TrapProps {
+  x: number;
+  y: number;
+}
+
+/**
+ * Memoized trap component - static, never re-renders unless position changes.
+ */
+const Trap = memo(function Trap({ x, y }: TrapProps) {
+  return (
+    <div
+      data-testid="trap"
+      className="absolute rounded-full"
+      style={{
+        left: x * CELL_SIZE + 4,
+        top: y * CELL_SIZE + 4,
+        width: CELL_SIZE - 8,
+        height: CELL_SIZE - 8,
+        zIndex: 10,
+        backgroundColor: "#9ca3af",
+      }}
+    />
+  );
+});
+
+interface GoalProps {
+  x: number;
+  y: number;
+  isVisited: boolean;
+}
+
+/**
+ * Memoized goal component - only re-renders when visited state changes.
+ */
+const Goal = memo(function Goal({ x, y, isVisited }: GoalProps) {
+  return (
+    <div
+      data-testid={isVisited ? "goal-visited" : "goal"}
+      className={cn(
+        "absolute rounded-full border-2",
+        isVisited
+          ? "bg-green-500 border-green-600"
+          : "bg-white border-gray-300"
+      )}
+      style={{
+        left: x * CELL_SIZE + 5,
+        top: y * CELL_SIZE + 5,
+        width: CELL_SIZE - 10,
+        height: CELL_SIZE - 10,
+        zIndex: 15,
+      }}
+    />
+  );
+});
+
+/**
+ * Agent colors by ID.
+ */
+const AGENT_COLORS = [
+  "bg-agent-0",
+  "bg-agent-1",
+  "bg-agent-2",
+  "bg-agent-3",
+  "bg-agent-4",
+  "bg-agent-5",
+  "bg-agent-6",
+  "bg-agent-7",
+  "bg-agent-8",
+  "bg-agent-9",
+];
+
+interface AgentProps {
+  id: number;
+  x: number;
+  y: number;
+  direction: number;
+}
+
+/**
+ * Memoized agent component - only re-renders when position/direction changes.
+ * Uses will-change for GPU acceleration during animations.
+ */
+const Agent = memo(function Agent({ id, x, y, direction }: AgentProps) {
+  return (
+    <div
+      className={cn(
+        "absolute flex items-center justify-center transition-all duration-150",
+        AGENT_COLORS[id % AGENT_COLORS.length]
+      )}
+      style={{
+        left: x * CELL_SIZE + 3,
+        top: y * CELL_SIZE + 3,
+        width: CELL_SIZE - 6,
+        height: CELL_SIZE - 6,
+        borderRadius: "50%",
+        zIndex: 20,
+        transform: `rotate(${direction}deg)`,
+        // P3: GPU compositing hint for smooth animations
+        willChange: "transform, left, top",
+      }}
+    >
+      {/* Direction indicator */}
+      <div
+        className="absolute bg-white rounded-full"
+        style={{
+          width: 3,
+          height: 8,
+          top: 1,
+          left: "50%",
+          transform: "translateX(-50%)",
+        }}
+      />
+    </div>
+  );
+});
+
+/**
+ * Path stroke colors by agent ID.
+ */
+const PATH_COLORS = [
+  "#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6",
+  "#ec4899", "#06b6d4", "#f97316", "#6366f1", "#84cc16",
+];
 
 /**
  * Grid visualization component for H2 robot simulation.
@@ -59,15 +250,44 @@ export function Grid({
   onCellClick,
   showPath = false,
 }: GridProps) {
-  // Get start position from problem or default to center
-  const startPosition = problem?.startPosition ?? {
+  // P2: Stable reference for default start position (only changes when gridSize changes)
+  const defaultStartPosition = useMemo(() => ({
     x: Math.floor(gridSize / 2),
     y: Math.floor(gridSize / 2),
-    direction: 0,
-  };
+    direction: 0 as const,
+  }), [gridSize]);
 
-  // Get walls for collision detection
-  const walls = problem?.walls ?? [];
+  // P2: Stable start position reference
+  const startPosition = problem?.startPosition ?? defaultStartPosition;
+
+  // P2: Stable walls reference (empty array is stable, problem.walls is from props)
+  const walls = problem?.walls ?? EMPTY_WALLS;
+
+  // P2: Stable callback reference for GridCell onClick
+  const handleCellClick = useCallback((x: number, y: number) => {
+    if (editMode && onCellClick) {
+      onCellClick(x, y);
+    }
+  }, [editMode, onCellClick]);
+
+  // P0: Memoized static grid cells - only re-renders when gridSize or editMode changes
+  const gridCells = useMemo(() => {
+    const cells: React.ReactElement[] = [];
+    for (let y = 0; y < gridSize; y++) {
+      for (let x = 0; x < gridSize; x++) {
+        cells.push(
+          <GridCell
+            key={`${x}-${y}`}
+            x={x}
+            y={y}
+            editMode={editMode}
+            onClick={onCellClick ? handleCellClick : undefined}
+          />
+        );
+      }
+    }
+    return cells;
+  }, [gridSize, editMode, handleCellClick, onCellClick]);
 
   // Calculate agent states and path history based on program and current step
   const { agentStates, pathHistory } = useMemo(() => {
@@ -140,52 +360,6 @@ export function Grid({
     return { agentStates: states, pathHistory: paths };
   }, [program, currentStep, gridSize, startPosition, walls]);
 
-  // Get agent color class
-  const getAgentColor = (id: number) => {
-    const colors = [
-      "bg-agent-0",
-      "bg-agent-1",
-      "bg-agent-2",
-      "bg-agent-3",
-      "bg-agent-4",
-      "bg-agent-5",
-      "bg-agent-6",
-      "bg-agent-7",
-      "bg-agent-8",
-      "bg-agent-9",
-    ];
-    return colors[id % colors.length];
-  };
-
-  // Get stroke color for path SVG
-  const getPathStrokeColor = (id: number) => {
-    const colors = [
-      "#3b82f6", // blue
-      "#ef4444", // red
-      "#22c55e", // green
-      "#f59e0b", // amber
-      "#8b5cf6", // purple
-      "#ec4899", // pink
-      "#06b6d4", // cyan
-      "#f97316", // orange
-      "#6366f1", // indigo
-      "#84cc16", // lime
-    ];
-    return colors[id % colors.length];
-  };
-
-  // Get rotation style for agent
-  const getRotationStyle = (direction: number) => ({
-    transform: `rotate(${direction}deg)`,
-  });
-
-  // Handle cell click
-  const handleCellClick = (x: number, y: number) => {
-    if (editMode && onCellClick) {
-      onCellClick(x, y);
-    }
-  };
-
   return (
     <div
       className={cn(
@@ -202,28 +376,8 @@ export function Grid({
         role="img"
         aria-label="Robot grid"
       >
-        {/* Grid cells */}
-        {Array.from({ length: gridSize * gridSize }).map((_, index) => {
-          const x = index % gridSize;
-          const y = Math.floor(index / gridSize);
-          return (
-            <div
-              key={`${x}-${y}`}
-              data-testid="grid-cell"
-              className={cn(
-                "absolute border border-grid-line bg-background",
-                editMode && "cursor-pointer hover:bg-muted"
-              )}
-              style={{
-                left: x * CELL_SIZE,
-                top: y * CELL_SIZE,
-                width: CELL_SIZE,
-                height: CELL_SIZE,
-              }}
-              onClick={() => handleCellClick(x, y)}
-            />
-          );
-        })}
+        {/* P0: Static layer - Grid cells (memoized, never re-renders during animation) */}
+        {gridCells}
 
         {/* Path trails (SVG) */}
         {showPath && pathHistory.length > 0 && (
@@ -247,7 +401,7 @@ export function Grid({
                   key={`path-${agentIndex}`}
                   d={pathD}
                   fill="none"
-                  stroke={getPathStrokeColor(agentIndex)}
+                  stroke={PATH_COLORS[agentIndex % PATH_COLORS.length]}
                   strokeWidth={3}
                   strokeOpacity={0.6}
                   strokeLinecap="round"
@@ -258,94 +412,35 @@ export function Grid({
           </svg>
         )}
 
-        {/* Walls (black blocks) */}
+        {/* P0: Static layer - Walls (memoized) */}
         {problem?.walls.map((wall, index) => (
-          <div
-            key={`wall-${index}`}
-            data-testid="wall"
-            className="absolute"
-            style={{
-              left: wall.x * CELL_SIZE + 2,
-              top: wall.y * CELL_SIZE + 2,
-              width: CELL_SIZE - 4,
-              height: CELL_SIZE - 4,
-              zIndex: 10,
-              backgroundColor: "#1f2937",
-            }}
-          />
+          <Wall key={`wall-${index}`} x={wall.x} y={wall.y} />
         ))}
 
-        {/* Traps (gray circles) */}
+        {/* P0: Static layer - Traps (memoized) */}
         {problem?.traps.map((trap, index) => (
-          <div
-            key={`trap-${index}`}
-            data-testid="trap"
-            className="absolute rounded-full"
-            style={{
-              left: trap.x * CELL_SIZE + 4,
-              top: trap.y * CELL_SIZE + 4,
-              width: CELL_SIZE - 8,
-              height: CELL_SIZE - 8,
-              zIndex: 10,
-              backgroundColor: "#9ca3af",
-            }}
+          <Trap key={`trap-${index}`} x={trap.x} y={trap.y} />
+        ))}
+
+        {/* Goals - only re-render when visited state changes */}
+        {problem?.goals.map((goal, index) => (
+          <Goal
+            key={`goal-${index}`}
+            x={goal.x}
+            y={goal.y}
+            isVisited={hasPosition(visitedGoals, goal.x, goal.y)}
           />
         ))}
 
-        {/* Goals (white/green circles) */}
-        {problem?.goals.map((goal, index) => {
-          const isVisited = hasPosition(visitedGoals, goal.x, goal.y);
-          return (
-            <div
-              key={`goal-${index}`}
-              data-testid={isVisited ? "goal-visited" : "goal"}
-              className={cn(
-                "absolute rounded-full border-2",
-                isVisited
-                  ? "bg-green-500 border-green-600"
-                  : "bg-white border-gray-300"
-              )}
-              style={{
-                left: goal.x * CELL_SIZE + 5,
-                top: goal.y * CELL_SIZE + 5,
-                width: CELL_SIZE - 10,
-                height: CELL_SIZE - 10,
-                zIndex: 15,
-              }}
-            />
-          );
-        })}
-
-        {/* Agents */}
+        {/* P0+P3: Dynamic layer - Agents (memoized with will-change) */}
         {agentStates.map((agent) => (
-          <div
+          <Agent
             key={agent.id}
-            className={cn(
-              "absolute flex items-center justify-center transition-all duration-150",
-              getAgentColor(agent.id)
-            )}
-            style={{
-              left: agent.x * CELL_SIZE + 3,
-              top: agent.y * CELL_SIZE + 3,
-              width: CELL_SIZE - 6,
-              height: CELL_SIZE - 6,
-              borderRadius: "50%",
-              zIndex: 20,
-              ...getRotationStyle(agent.direction),
-            }}
-          >
-            {/* Direction indicator (line pointing forward) */}
-            <div
-              className="absolute bg-white rounded-full"
-              style={{
-                width: 3,
-                height: 8,
-                top: 1,
-                left: "50%",
-                transform: "translateX(-50%)",
-              }}
-            />
-          </div>
+            id={agent.id}
+            x={agent.x}
+            y={agent.y}
+            direction={agent.direction}
+          />
         ))}
       </div>
     </div>

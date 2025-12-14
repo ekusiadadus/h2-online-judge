@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useMemo, useRef, useEffect, memo } from "react";
 import { cn } from "@/lib/utils";
 import type { CompileResult, CommandType } from "@/lib/h2lang/types";
 import {
@@ -12,6 +13,10 @@ import {
   Trophy,
   AlertTriangle,
 } from "lucide-react";
+
+// P1: Virtual scrolling configuration
+const VISIBLE_RANGE = 50; // Number of steps to show before/after current step
+const ROW_HEIGHT = 28; // Approximate height of each timeline row in pixels
 
 interface OutputPanelProps {
   compileResult: CompileResult | null;
@@ -69,6 +74,147 @@ function getCommandLabel(type: CommandType): string {
     default:
       return type;
   }
+}
+
+// P1: Memoized timeline row to prevent unnecessary re-renders
+interface TimelineRowProps {
+  index: number;
+  agentCommands: Array<{
+    agent_id: number;
+    command: { type: CommandType };
+  }>;
+  isCurrent: boolean;
+  isCompleted: boolean;
+}
+
+const TimelineRow = memo(function TimelineRow({
+  index,
+  agentCommands,
+  isCurrent,
+  isCompleted,
+}: TimelineRowProps) {
+  const isPending = !isCurrent && !isCompleted;
+
+  return (
+    <div
+      data-testid={`timeline-step-${index}`}
+      className={cn(
+        "flex items-center gap-2 px-2 py-1 rounded text-xs transition-colors",
+        isCurrent && "bg-primary/20 font-bold border-l-2 border-primary",
+        isCompleted && "text-muted-foreground",
+        isPending && "text-muted-foreground/60"
+      )}
+      style={{ height: ROW_HEIGHT }}
+    >
+      <span className="w-6 text-right tabular-nums">{index}</span>
+      <span className="text-muted-foreground">:</span>
+      <div className="flex items-center gap-1 flex-wrap">
+        {agentCommands.map((agentCmd, cmdIndex) => (
+          <span
+            key={cmdIndex}
+            className={cn(
+              "inline-flex items-center gap-1 px-1.5 py-0.5 rounded",
+              isCurrent ? "bg-primary/30" : "bg-muted"
+            )}
+          >
+            <span className="text-primary font-bold text-xs">
+              {getCommandShortLabel(agentCmd.command.type)}
+            </span>
+            <CommandIcon type={agentCmd.command.type} />
+            <span className="text-[10px]">
+              {getCommandLabel(agentCmd.command.type)}
+            </span>
+          </span>
+        ))}
+      </div>
+      {isCurrent && (
+        <span className="ml-auto text-primary text-[10px]">current</span>
+      )}
+    </div>
+  );
+});
+
+// P1: Virtualized timeline component
+interface VirtualizedTimelineProps {
+  timeline: Array<{
+    step: number;
+    agent_commands: Array<{
+      agent_id: number;
+      command: { type: CommandType };
+    }>;
+  }>;
+  currentStep: number;
+}
+
+function VirtualizedTimeline({ timeline, currentStep }: VirtualizedTimelineProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const totalItems = timeline.length;
+
+  // P1: Calculate visible range around currentStep
+  const { startIndex, endIndex, visibleItems } = useMemo(() => {
+    const start = Math.max(0, currentStep - VISIBLE_RANGE);
+    const end = Math.min(totalItems - 1, currentStep + VISIBLE_RANGE);
+    const items = timeline.slice(start, end + 1).map((entry, i) => ({
+      ...entry,
+      originalIndex: start + i,
+    }));
+    return { startIndex: start, endIndex: end, visibleItems: items };
+  }, [timeline, currentStep, totalItems]);
+
+  // P1 Fix: Use requestAnimationFrame to avoid forced reflow
+  // Only auto-scroll when current step approaches window boundary
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Use RAF to batch DOM read/write and avoid forced reflow
+    requestAnimationFrame(() => {
+      const relativeIndex = currentStep - startIndex;
+      // Only scroll if current step is near the edge of visible area
+      if (relativeIndex < 5 || relativeIndex > VISIBLE_RANGE * 2 - 5) {
+        const targetScroll = Math.max(0, (relativeIndex - 5) * ROW_HEIGHT);
+        container.scrollTop = targetScroll;
+      }
+    });
+  }, [currentStep, startIndex]);
+
+  // Calculate spacer heights for virtual scrolling
+  const topSpacerHeight = startIndex * ROW_HEIGHT;
+  const bottomSpacerHeight = Math.max(0, (totalItems - endIndex - 1) * ROW_HEIGHT);
+
+  return (
+    <div className="flex flex-col flex-1 min-h-0">
+      <h3 className="text-xs font-medium text-muted-foreground mb-1">
+        Timeline ({totalItems} steps)
+      </h3>
+      <div
+        ref={containerRef}
+        className="flex-1 overflow-y-auto"
+        style={{ contain: "strict" }}
+      >
+        {/* Top spacer for virtualization */}
+        {topSpacerHeight > 0 && (
+          <div style={{ height: topSpacerHeight }} aria-hidden="true" />
+        )}
+
+        {/* Visible rows only */}
+        {visibleItems.map((entry) => (
+          <TimelineRow
+            key={entry.step}
+            index={entry.originalIndex}
+            agentCommands={entry.agent_commands}
+            isCurrent={entry.originalIndex === currentStep}
+            isCompleted={entry.originalIndex < currentStep}
+          />
+        ))}
+
+        {/* Bottom spacer for virtualization */}
+        {bottomSpacerHeight > 0 && (
+          <div style={{ height: bottomSpacerHeight }} aria-hidden="true" />
+        )}
+      </div>
+    </div>
+  );
 }
 
 /**
@@ -173,60 +319,12 @@ export function OutputPanel({
               </div>
             )}
 
-            {/* Timeline */}
+            {/* P1: Timeline with virtual scrolling */}
             {program.timeline.length > 0 && (
-              <div className="flex flex-col flex-1 min-h-0">
-                <h3 className="text-xs font-medium text-muted-foreground mb-1">Timeline</h3>
-                <div className="flex-1 overflow-y-auto space-y-0.5">
-                  {program.timeline.map((entry, index) => {
-                    const isCurrent = index === currentStep;
-                    const isCompleted = index < currentStep;
-                    const isPending = index > currentStep;
-
-                    return (
-                      <div
-                        key={entry.step}
-                        data-testid={`timeline-step-${index}`}
-                        className={cn(
-                          "flex items-center gap-2 px-2 py-1 rounded text-xs transition-colors",
-                          isCurrent && "bg-primary/20 font-bold border-l-2 border-primary",
-                          isCompleted && "text-muted-foreground",
-                          isPending && !isCurrent && "text-muted-foreground/60"
-                        )}
-                      >
-                        <span className="w-6 text-right tabular-nums">
-                          {index}
-                        </span>
-                        <span className="text-muted-foreground">:</span>
-                        <div className="flex items-center gap-1 flex-wrap">
-                          {entry.agent_commands.map((agentCmd, cmdIndex) => (
-                            <span
-                              key={cmdIndex}
-                              className={cn(
-                                "inline-flex items-center gap-1 px-1.5 py-0.5 rounded",
-                                isCurrent ? "bg-primary/30" : "bg-muted"
-                              )}
-                            >
-                              <span className="text-primary font-bold text-xs">
-                                {getCommandShortLabel(agentCmd.command.type)}
-                              </span>
-                              <CommandIcon type={agentCmd.command.type} />
-                              <span className="text-[10px]">
-                                {getCommandLabel(agentCmd.command.type)}
-                              </span>
-                            </span>
-                          ))}
-                        </div>
-                        {isCurrent && (
-                          <span className="ml-auto text-primary text-[10px]">
-                            current
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              <VirtualizedTimeline
+                timeline={program.timeline}
+                currentStep={currentStep}
+              />
             )}
           </div>
         )}
