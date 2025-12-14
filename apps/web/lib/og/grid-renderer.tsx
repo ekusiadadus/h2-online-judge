@@ -2,189 +2,16 @@
  * OG Image Grid Renderer
  *
  * Renders the playground grid as JSX for ImageResponse.
- * Exactly matches the playground grid.tsx design.
+ * Uses flexbox layout (not position absolute) for Satori compatibility.
  *
  * Note: Uses inline styles because Satori (ImageResponse) only supports
  * a subset of CSS and does not support Tailwind classes.
  */
 
 import { OG_COLORS, OG_GRID } from "./colors";
-import type { OGProblemData, OGAgentState } from "./types";
+import type { OGProblemData } from "./types";
 
 const { size: GRID_SIZE, cellSize: CELL_SIZE } = OG_GRID;
-
-/**
- * Check if a position exists in a list.
- */
-function hasPosition(
-  positions: { x: number; y: number }[],
-  x: number,
-  y: number
-): boolean {
-  return positions.some((p) => p.x === x && p.y === y);
-}
-
-/**
- * Get direction in degrees from Direction type.
- */
-function getDirectionDegrees(direction: number): number {
-  // 0: up (0°), 1: right (90°), 2: down (180°), 3: left (270°)
-  // Or direct degrees: 0, 90, 180, 270
-  if (direction <= 3) {
-    return direction * 90;
-  }
-  return direction;
-}
-
-interface GridCellProps {
-  x: number;
-  y: number;
-}
-
-/**
- * Single grid cell - matches grid.tsx GridCell component.
- */
-function GridCellOG({ x, y }: GridCellProps) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: x * CELL_SIZE,
-        top: y * CELL_SIZE,
-        width: CELL_SIZE,
-        height: CELL_SIZE,
-        backgroundColor: OG_COLORS.gridCell,
-        border: `1px solid ${OG_COLORS.gridLine}`,
-      }}
-    />
-  );
-}
-
-interface WallProps {
-  x: number;
-  y: number;
-}
-
-/**
- * Wall element - matches grid.tsx Wall component.
- * Positioned 2px inside cell.
- */
-function WallOG({ x, y }: WallProps) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: x * CELL_SIZE + 2,
-        top: y * CELL_SIZE + 2,
-        width: CELL_SIZE - 4,
-        height: CELL_SIZE - 4,
-        backgroundColor: OG_COLORS.wall,
-      }}
-    />
-  );
-}
-
-interface TrapProps {
-  x: number;
-  y: number;
-}
-
-/**
- * Trap element - matches grid.tsx Trap component.
- * Rounded, positioned 4px inside cell.
- */
-function TrapOG({ x, y }: TrapProps) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: x * CELL_SIZE + 4,
-        top: y * CELL_SIZE + 4,
-        width: CELL_SIZE - 8,
-        height: CELL_SIZE - 8,
-        backgroundColor: OG_COLORS.trap,
-        borderRadius: "50%",
-      }}
-    />
-  );
-}
-
-interface GoalProps {
-  x: number;
-  y: number;
-  isVisited?: boolean;
-}
-
-/**
- * Goal element - matches grid.tsx Goal component.
- * Rounded with border, positioned 5px inside cell.
- */
-function GoalOG({ x, y, isVisited = false }: GoalProps) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: x * CELL_SIZE + 5,
-        top: y * CELL_SIZE + 5,
-        width: CELL_SIZE - 10,
-        height: CELL_SIZE - 10,
-        backgroundColor: isVisited
-          ? OG_COLORS.goalVisited
-          : OG_COLORS.goalDefault,
-        border: `2px solid ${
-          isVisited ? OG_COLORS.goalVisitedBorder : OG_COLORS.goalDefaultBorder
-        }`,
-        borderRadius: "50%",
-      }}
-    />
-  );
-}
-
-interface AgentProps {
-  id: number;
-  x: number;
-  y: number;
-  direction: number;
-}
-
-/**
- * Agent element - matches grid.tsx Agent component.
- * Colored circle with direction indicator.
- */
-function AgentOG({ id, x, y, direction }: AgentProps) {
-  const color = OG_COLORS.agents[id % OG_COLORS.agents.length];
-  const degrees = getDirectionDegrees(direction);
-
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: x * CELL_SIZE + 3,
-        top: y * CELL_SIZE + 3,
-        width: CELL_SIZE - 6,
-        height: CELL_SIZE - 6,
-        backgroundColor: color,
-        borderRadius: "50%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        transform: `rotate(${degrees}deg)`,
-      }}
-    >
-      {/* Direction indicator - white bar at top */}
-      <div
-        style={{
-          position: "absolute",
-          width: 2,
-          height: 6,
-          top: 1,
-          backgroundColor: OG_COLORS.directionIndicator,
-          borderRadius: 1,
-        }}
-      />
-    </div>
-  );
-}
 
 interface OGGridProps {
   problem: OGProblemData;
@@ -193,78 +20,65 @@ interface OGGridProps {
 }
 
 /**
- * Complete grid renderer for OG images.
- * Renders the full 25x25 grid with all elements.
+ * Grid renderer using flexbox layout.
+ * Satori has issues with position absolute, so we use flexbox rows instead.
  */
 export function OGGrid({ problem, visitedGoals = [] }: OGGridProps) {
-  const gridPixelSize = GRID_SIZE * CELL_SIZE;
-
-  // Create grid cells
-  const cells: React.ReactElement[] = [];
-  for (let y = 0; y < GRID_SIZE; y++) {
-    for (let x = 0; x < GRID_SIZE; x++) {
-      cells.push(<GridCellOG key={`cell-${x}-${y}`} x={x} y={y} />);
-    }
-  }
-
-  // Initial agent state at start position
-  const agent: OGAgentState = {
-    id: 0,
-    x: problem.startPosition.x,
-    y: problem.startPosition.y,
-    direction: problem.startPosition.direction,
-  };
+  // Create lookup sets for O(1) access
+  const goalSet = new Set(problem.goals.map((g) => `${g.x},${g.y}`));
+  const visitedGoalSet = new Set(visitedGoals.map((g) => `${g.x},${g.y}`));
+  const wallSet = new Set(problem.walls.map((w) => `${w.x},${w.y}`));
+  const trapSet = new Set(problem.traps.map((t) => `${t.x},${t.y}`));
+  const agentKey = `${problem.startPosition.x},${problem.startPosition.y}`;
 
   return (
     <div
       style={{
-        position: "relative",
-        width: gridPixelSize,
-        height: gridPixelSize,
+        display: "flex",
+        flexDirection: "column",
         backgroundColor: OG_COLORS.card,
         borderRadius: 8,
+        padding: 8,
         border: `1px solid ${OG_COLORS.cardBorder}`,
-        padding: OG_GRID.padding,
       }}
     >
-      <div
-        style={{
-          position: "relative",
-          width: gridPixelSize,
-          height: gridPixelSize,
-        }}
-      >
-        {/* Grid cells */}
-        {cells}
+      {Array.from({ length: GRID_SIZE }).map((_, y) => (
+        <div key={y} style={{ display: "flex" }}>
+          {Array.from({ length: GRID_SIZE }).map((_, x) => {
+            const key = `${x},${y}`;
+            let bgColor: string = OG_COLORS.gridCell;
+            let borderRadius = 0;
 
-        {/* Walls */}
-        {problem.walls.map((wall, i) => (
-          <WallOG key={`wall-${i}`} x={wall.x} y={wall.y} />
-        ))}
+            if (wallSet.has(key)) {
+              bgColor = OG_COLORS.wall;
+            } else if (trapSet.has(key)) {
+              bgColor = OG_COLORS.trap;
+              borderRadius = CELL_SIZE / 2;
+            } else if (goalSet.has(key)) {
+              bgColor = visitedGoalSet.has(key)
+                ? OG_COLORS.goalVisited
+                : OG_COLORS.goalDefault;
+              borderRadius = CELL_SIZE / 2;
+            } else if (key === agentKey) {
+              bgColor = OG_COLORS.agents[0];
+              borderRadius = CELL_SIZE / 2;
+            }
 
-        {/* Traps */}
-        {problem.traps.map((trap, i) => (
-          <TrapOG key={`trap-${i}`} x={trap.x} y={trap.y} />
-        ))}
-
-        {/* Goals */}
-        {problem.goals.map((goal, i) => (
-          <GoalOG
-            key={`goal-${i}`}
-            x={goal.x}
-            y={goal.y}
-            isVisited={hasPosition(visitedGoals, goal.x, goal.y)}
-          />
-        ))}
-
-        {/* Agent */}
-        <AgentOG
-          id={agent.id}
-          x={agent.x}
-          y={agent.y}
-          direction={agent.direction}
-        />
-      </div>
+            return (
+              <div
+                key={x}
+                style={{
+                  width: CELL_SIZE,
+                  height: CELL_SIZE,
+                  backgroundColor: bgColor,
+                  borderRadius,
+                  border: `1px solid ${OG_COLORS.gridLine}`,
+                }}
+              />
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }
@@ -288,7 +102,7 @@ export function ProblemShareImage({ problem }: ProblemShareImageProps) {
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: OG_COLORS.background,
-        padding: 40,
+        padding: 20,
       }}
     >
       {/* Header */}
@@ -296,22 +110,22 @@ export function ProblemShareImage({ problem }: ProblemShareImageProps) {
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: 24,
+          marginBottom: 16,
         }}
       >
         <span
           style={{
-            fontSize: 36,
+            fontSize: 32,
             fontWeight: "bold",
             color: OG_COLORS.primary,
-            marginRight: 12,
+            marginRight: 8,
           }}
         >
           H2
         </span>
         <span
           style={{
-            fontSize: 28,
+            fontSize: 24,
             color: OG_COLORS.textPrimary,
           }}
         >
@@ -326,8 +140,7 @@ export function ProblemShareImage({ problem }: ProblemShareImageProps) {
       <div
         style={{
           display: "flex",
-          gap: 32,
-          marginTop: 24,
+          marginTop: 16,
         }}
       >
         {problem.goals.length > 0 && (
@@ -335,7 +148,7 @@ export function ProblemShareImage({ problem }: ProblemShareImageProps) {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
+              marginRight: 24,
             }}
           >
             <div
@@ -343,11 +156,11 @@ export function ProblemShareImage({ problem }: ProblemShareImageProps) {
                 width: 12,
                 height: 12,
                 backgroundColor: OG_COLORS.goalDefault,
-                border: `2px solid ${OG_COLORS.goalDefaultBorder}`,
-                borderRadius: "50%",
+                borderRadius: 6,
+                marginRight: 6,
               }}
             />
-            <span style={{ color: OG_COLORS.textSecondary, fontSize: 18 }}>
+            <span style={{ color: OG_COLORS.textSecondary, fontSize: 16 }}>
               {problem.goals.length} Goals
             </span>
           </div>
@@ -357,7 +170,7 @@ export function ProblemShareImage({ problem }: ProblemShareImageProps) {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
+              marginRight: 24,
             }}
           >
             <div
@@ -365,9 +178,10 @@ export function ProblemShareImage({ problem }: ProblemShareImageProps) {
                 width: 12,
                 height: 12,
                 backgroundColor: OG_COLORS.wall,
+                marginRight: 6,
               }}
             />
-            <span style={{ color: OG_COLORS.textSecondary, fontSize: 18 }}>
+            <span style={{ color: OG_COLORS.textSecondary, fontSize: 16 }}>
               {problem.walls.length} Walls
             </span>
           </div>
@@ -377,7 +191,6 @@ export function ProblemShareImage({ problem }: ProblemShareImageProps) {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
             }}
           >
             <div
@@ -385,10 +198,11 @@ export function ProblemShareImage({ problem }: ProblemShareImageProps) {
                 width: 12,
                 height: 12,
                 backgroundColor: OG_COLORS.trap,
-                borderRadius: "50%",
+                borderRadius: 6,
+                marginRight: 6,
               }}
             />
-            <span style={{ color: OG_COLORS.textSecondary, fontSize: 18 }}>
+            <span style={{ color: OG_COLORS.textSecondary, fontSize: 16 }}>
               {problem.traps.length} Traps
             </span>
           </div>
@@ -398,8 +212,8 @@ export function ProblemShareImage({ problem }: ProblemShareImageProps) {
       {/* URL */}
       <div
         style={{
-          marginTop: 16,
-          fontSize: 16,
+          marginTop: 12,
+          fontSize: 14,
           color: OG_COLORS.textMuted,
         }}
       >

@@ -31,7 +31,11 @@ export function ShareButton({ code, problem, className }: ShareButtonProps) {
 
       // Build the share URL
       const baseUrl = window.location.origin;
-      const locale = window.location.pathname.split("/")[1] || "ja";
+      const pathParts = window.location.pathname.split("/").filter(Boolean);
+      // Check if first part is a valid locale (ja or en)
+      const validLocales = ["ja", "en"];
+      const firstPart = pathParts[0] ?? "";
+      const locale = validLocales.includes(firstPart) ? firstPart : "ja";
       const shareUrl = `${baseUrl}/${locale}/playground?s=${encoded}`;
 
       // Copy to clipboard

@@ -116,7 +116,6 @@ export async function GET(request: Request) {
     const bytesParam = searchParams.get("bytes");
     const username = searchParams.get("username");
 
-    // Check if this is a solution share (has rank, bytes, username)
     const isSolutionShare =
       rankParam !== null && bytesParam !== null && username !== null;
 
@@ -124,15 +123,20 @@ export async function GET(request: Request) {
     let problemData: OGProblemData = DEFAULT_PROBLEM;
 
     if (shareCode) {
-      const result = decodeShareState(shareCode);
-      if (result.success && result.state.problem) {
-        problemData = {
-          goals: result.state.problem.goals,
-          walls: result.state.problem.walls,
-          traps: result.state.problem.traps,
-          startPosition: result.state.problem.startPosition,
-          code: result.state.code,
-        };
+      try {
+        const result = decodeShareState(shareCode);
+        if (result.success && result.state.problem) {
+          problemData = {
+            goals: result.state.problem.goals,
+            walls: result.state.problem.walls,
+            traps: result.state.problem.traps,
+            startPosition: result.state.problem.startPosition,
+            code: result.state.code,
+          };
+        }
+      } catch (decodeError) {
+        console.error("Decode error:", decodeError);
+        // Continue with default problem
       }
     }
 
@@ -156,7 +160,7 @@ export async function GET(request: Request) {
         />
       );
     } else {
-      // Problem share - show grid only
+      // Problem share - show grid
       imageElement = <ProblemShareImage problem={problemData} />;
     }
 

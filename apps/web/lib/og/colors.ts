@@ -22,7 +22,8 @@ export const OG_COLORS = {
   gridCell: "#151b24", // Same as card
 
   // Element colors (from grid.tsx hardcoded values)
-  wall: "#1f2937", // gray-800
+  // Wall made lighter for better visibility in OG images
+  wall: "#374151", // gray-700 (more visible than gray-800)
   trap: "#9ca3af", // gray-400
 
   // Goal colors
