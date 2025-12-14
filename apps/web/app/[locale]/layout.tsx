@@ -7,6 +7,7 @@ import { routing } from "@/i18n/routing";
 import { Header, Footer } from "@/components/layout";
 import { UsernameGuard } from "@/components/auth";
 import { WebVitalsReporter } from "@/components/analytics/web-vitals-reporter";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import {
   getBaseUrl,
   getAlternateLanguages,
@@ -121,6 +122,7 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col`}
       >
+        <GoogleAnalytics />
         <NextIntlClientProvider messages={messages}>
           <WebVitalsReporter />
           <UsernameGuard />
