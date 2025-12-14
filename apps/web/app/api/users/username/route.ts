@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { getCurrentUser, AuthError } from "@/lib/auth";
-import { eq, sql } from "drizzle-orm";
+import { eq, and, ne } from "drizzle-orm";
 import { z } from "zod";
 
 /** Reserved usernames that cannot be used */
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
     if (!validation.success) {
       return NextResponse.json({
         available: false,
-        reason: validation.error.errors[0]?.message || "Invalid username format",
+        reason: validation.error.issues[0]?.message || "Invalid username format",
       });
     }
 
@@ -119,20 +119,11 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /api/users/username - Set username (only once, cannot be changed)
+ * POST /api/users/username - Set username for the first time
  */
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser();
-
-    // Check if username is already set
-    if (user.username) {
-      return NextResponse.json(
-        { error: "Username has already been set and cannot be changed" },
-        { status: 400 }
-      );
-    }
-
     const body = await request.json();
     const { username } = body;
 
@@ -149,59 +140,57 @@ export async function POST(request: NextRequest) {
     const validation = usernameSchema.safeParse(normalizedUsername);
     if (!validation.success) {
       return NextResponse.json(
-        { error: validation.error.errors[0]?.message || "Invalid username format" },
+        { error: validation.error.issues[0]?.message || "Invalid username format" },
         { status: 400 }
       );
     }
 
-    // Double-check uniqueness with a transaction to prevent race conditions
-    // Use a SELECT FOR UPDATE pattern (SQLite uses IMMEDIATE transaction)
+    // Use transaction to ensure atomicity
     try {
-      // Check if username exists
-      const existing = await db.query.users.findFirst({
-        where: eq(users.username, normalizedUsername),
+      const result = await db.transaction(async (tx) => {
+        // Check if username exists (excluding current user)
+        const existing = await tx.query.users.findFirst({
+          where: and(
+            eq(users.username, normalizedUsername),
+            ne(users.id, user.id)
+          ),
+        });
+
+        if (existing) {
+          throw new Error("USERNAME_TAKEN");
+        }
+
+        // Set the username
+        await tx
+          .update(users)
+          .set({
+            username: normalizedUsername,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, user.id));
+
+        // Verify it was set
+        const updated = await tx.query.users.findFirst({
+          where: eq(users.id, user.id),
+        });
+
+        if (updated?.username !== normalizedUsername) {
+          throw new Error("USERNAME_TAKEN");
+        }
+
+        return { success: true, username: normalizedUsername };
       });
 
-      if (existing) {
-        return NextResponse.json(
-          { error: "Username is already taken" },
-          { status: 409 }
-        );
-      }
-
-      // Set the username
-      await db
-        .update(users)
-        .set({
-          username: normalizedUsername,
-          updatedAt: new Date(),
-        })
-        .where(eq(users.id, user.id));
-
-      // Verify it was set (double-check for race condition)
-      const updated = await db.query.users.findFirst({
-        where: eq(users.id, user.id),
-      });
-
-      if (updated?.username !== normalizedUsername) {
-        // Race condition occurred, someone else took the username
-        return NextResponse.json(
-          { error: "Username was taken by another user. Please try a different one." },
-          { status: 409 }
-        );
-      }
-
-      return NextResponse.json({
-        success: true,
-        username: normalizedUsername,
-      });
+      return NextResponse.json(result);
     } catch (dbError: unknown) {
-      // Handle unique constraint violation
-      if (dbError instanceof Error && dbError.message.includes("UNIQUE constraint failed")) {
-        return NextResponse.json(
-          { error: "Username is already taken" },
-          { status: 409 }
-        );
+      if (dbError instanceof Error) {
+        if (dbError.message === "USERNAME_TAKEN" ||
+            dbError.message.includes("UNIQUE constraint failed")) {
+          return NextResponse.json(
+            { error: "Username is already taken" },
+            { status: 409 }
+          );
+        }
       }
       throw dbError;
     }
@@ -213,6 +202,105 @@ export async function POST(request: NextRequest) {
       );
     }
     console.error("POST /api/users/username error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * PUT /api/users/username - Update existing username
+ */
+export async function PUT(request: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+    const body = await request.json();
+    const { username } = body;
+
+    if (!username || typeof username !== "string") {
+      return NextResponse.json(
+        { error: "Username is required" },
+        { status: 400 }
+      );
+    }
+
+    const normalizedUsername = username.toLowerCase().trim();
+
+    // Check if same as current
+    if (user.username === normalizedUsername) {
+      return NextResponse.json({
+        success: true,
+        username: normalizedUsername,
+      });
+    }
+
+    // Validate format
+    const validation = usernameSchema.safeParse(normalizedUsername);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: validation.error.issues[0]?.message || "Invalid username format" },
+        { status: 400 }
+      );
+    }
+
+    // Use transaction to ensure atomicity
+    try {
+      const result = await db.transaction(async (tx) => {
+        // Check if username exists (excluding current user)
+        const existing = await tx.query.users.findFirst({
+          where: and(
+            eq(users.username, normalizedUsername),
+            ne(users.id, user.id)
+          ),
+        });
+
+        if (existing) {
+          throw new Error("USERNAME_TAKEN");
+        }
+
+        // Update the username
+        await tx
+          .update(users)
+          .set({
+            username: normalizedUsername,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, user.id));
+
+        // Verify it was set
+        const updated = await tx.query.users.findFirst({
+          where: eq(users.id, user.id),
+        });
+
+        if (updated?.username !== normalizedUsername) {
+          throw new Error("USERNAME_TAKEN");
+        }
+
+        return { success: true, username: normalizedUsername };
+      });
+
+      return NextResponse.json(result);
+    } catch (dbError: unknown) {
+      if (dbError instanceof Error) {
+        if (dbError.message === "USERNAME_TAKEN" ||
+            dbError.message.includes("UNIQUE constraint failed")) {
+          return NextResponse.json(
+            { error: "Username is already taken" },
+            { status: 409 }
+          );
+        }
+      }
+      throw dbError;
+    }
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode }
+      );
+    }
+    console.error("PUT /api/users/username error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

@@ -1,4 +1,18 @@
 {
+  "seo": {
+    "home": {
+      "title": "H2 Online Judge - Program Robots with H2 Language",
+      "description": "Program robots using H2 language. Experience visual programming with 3 simple commands. Multi-agent support for parallel execution."
+    },
+    "playground": {
+      "title": "Playground",
+      "description": "Online H2 language editor. Write code and control robots in real-time. Create and share your own programming challenges."
+    },
+    "problems": {
+      "title": "Problems",
+      "description": "Take on programming challenges. Sharpen your H2 language skills with problems of varying difficulty."
+    }
+  },
   "common": {
     "title": "H2 Online Judge",
     "description": "Program robots using H2 language",
@@ -105,8 +119,30 @@
       "submitting": "Setting...",
       "success": "Username set successfully!",
       "error": "Failed to set username",
-      "cannotChange": "Note: Username cannot be changed once set"
+      "cannotChange": "Note: You can change your username later in your profile"
     }
+  },
+  "profile": {
+    "title": "Profile",
+    "loading": "Loading profile...",
+    "username": "Username",
+    "email": "Email",
+    "displayName": "Display Name",
+    "accountInfo": "Account Info",
+    "role": "Role",
+    "createdAt": "Member Since",
+    "notSet": "Not set",
+    "edit": "Edit",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "checking": "Checking availability...",
+    "available": "Username is available",
+    "taken": "Username is already taken",
+    "invalidFormat": "Invalid username format",
+    "sameUsername": "Same as current username",
+    "requirements": "3-20 characters, lowercase letters, numbers, and underscores only. Must start with a letter.",
+    "updateError": "Failed to update username"
   },
   "problems": {
     "title": "Problems",

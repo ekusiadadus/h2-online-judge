@@ -78,6 +78,7 @@ export async function getCurrentUser() {
     id: sub,
     email: session.user.email ?? "",
     name: session.user.name ?? null,
+    username: null,
     role: isAdmin ? ("admin" as const) : ("user" as const),
   };
 
