@@ -91,8 +91,8 @@ importers:
         specifier: ^0.45.1
         version: 0.45.1(@libsql/client@0.15.15)
       h2lang:
-        specifier: ^0.5.3
-        version: 0.5.3
+        specifier: ^0.5.4
+        version: 0.5.4
       lucide-react:
         specifier: ^0.468.0
         version: 0.468.0(react@19.2.0)
@@ -2317,8 +2317,8 @@ packages:
     resolution: {integrity: sha512-ax7ZYomf6jqPTQ4+XCpUGyXKHk5WweS+e05MBO4/y3WJ5RkmPXNKvX+bx1behVILVwr6JSQvZAku021CHPXG3Q==}
     engines: {node: '>=10'}
 
-  h2lang@0.5.3:
-    resolution: {integrity: sha512-CQFgPhhMb+b471HsTu0X7kfs5igY3hca8+u/6xj1CpRqi7cQiRogFAhn9Is3mFjkQNdVzqR4wV/Hapr765b73w==}
+  h2lang@0.5.4:
+    resolution: {integrity: sha512-8W+zcQcbBu7wuF/S6f82zbwAz8+DZLY1YsPpsqh5KmiqwKUB7yebHcN/kOwFw9QFo4+wueA9aF8MTCYOGmhc4Q==}
 
   has-bigints@1.1.0:
     resolution: {integrity: sha512-R3pbpkcIqv2Pm3dUwgjclDRVmWpTJW2DcMzcIhEXEx1oh/CEMObMm3KLmRJOdvhM7o4uQBnwr8pzRK2sJWIqfg==}
@@ -5352,7 +5352,7 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
-  h2lang@0.5.3: {}
+  h2lang@0.5.4: {}
 
   has-bigints@1.1.0: {}
 

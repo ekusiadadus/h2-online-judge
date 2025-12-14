@@ -91,14 +91,17 @@ function PlaygroundContent() {
 
   // Calculate effective byte count using WASM (code golf scoring)
   const effectiveBytes = useMemo(() => {
-    if (!wasmReady) return null;
+    if (!wasmReady) {
+      return null;
+    }
     try {
       const result = countBytes(code);
       if (result.status === "success") {
         return result.bytes;
       }
       return null; // Syntax error - show "-"
-    } catch {
+    } catch (e) {
+      console.error("[countBytes] error:", e);
       return null;
     }
   }, [code, wasmReady]);
