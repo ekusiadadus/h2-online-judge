@@ -19,6 +19,7 @@
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.13.3",
     "@libsql/client": "^0.15.15",
+    "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-slot": "^1.1.1",
     "@repo/ui": "workspace:*",
     "class-variance-authority": "^0.7.1",
@@ -37,6 +38,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.0.10",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4.0.0",
