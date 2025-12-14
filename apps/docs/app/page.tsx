@@ -1,102 +1,62 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
-
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
-
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
-
-  return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
-
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>apps/docs/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="container mx-auto px-4 py-12">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-4xl font-bold mb-6">H2 Online Judge Documentation</h1>
+        <p className="text-lg text-muted-foreground mb-8">
+          Learn how to use H2 Online Judge - a visual programming environment
+          for controlling robots with the H2 language.
+        </p>
 
-        <div className={styles.ctas}>
+        <div className="grid gap-6 md:grid-cols-2">
           <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/guide"
+            className="block p-6 rounded-lg border border-border hover:border-primary transition-colors"
           >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
+            <h2 className="text-xl font-semibold mb-2">Getting Started</h2>
+            <p className="text-muted-foreground">
+              Learn the basics of H2 Online Judge and write your first program.
+            </p>
           </a>
+
           <a
-            href="https://turborepo.com/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
+            href="/language"
+            className="block p-6 rounded-lg border border-border hover:border-primary transition-colors"
           >
-            Read our docs
+            <h2 className="text-xl font-semibold mb-2">Language Reference</h2>
+            <p className="text-muted-foreground">
+              Complete reference for H2 language syntax and features.
+            </p>
           </a>
         </div>
-        <Button appName="docs" className={styles.secondary}>
-          Open alert
-        </Button>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.com?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.com →
-        </a>
-      </footer>
+
+        <section className="mt-12">
+          <h2 className="text-2xl font-bold mb-4">Quick Example</h2>
+          <pre className="p-4 rounded-lg bg-muted font-mono text-sm overflow-x-auto">
+            {`# Move forward 3 times and turn right
+sss r
+
+# Define a macro
+Square: s r s r s r s r
+Square
+
+# Multi-agent programming
+@0: sss
+@1: rrr`}
+          </pre>
+        </section>
+
+        <section className="mt-12">
+          <h2 className="text-2xl font-bold mb-4">Features</h2>
+          <ul className="space-y-2 text-muted-foreground">
+            <li>- Visual execution on a 25x25 grid</li>
+            <li>- Multi-agent support with parallel execution</li>
+            <li>- Macros and recursive functions</li>
+            <li>- Problem editor for creating puzzles</li>
+            <li>- Share your solutions via URL</li>
+          </ul>
+        </section>
+      </div>
     </div>
   );
 }
