@@ -11,12 +11,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 const mockCompileFn = vi.fn();
 const mockValidateFn = vi.fn();
 const mockVersionFn = vi.fn();
+const mockCountBytesFn = vi.fn();
 
 // Mock the h2lang module
 vi.mock("../../lib/h2lang", () => ({
   compile: (...args: unknown[]) => mockCompileFn(...args),
   validate: (...args: unknown[]) => mockValidateFn(...args),
   version: () => mockVersionFn(),
+  countBytes: (...args: unknown[]) => mockCountBytesFn(...args),
   initH2Lang: vi.fn().mockResolvedValue(undefined),
   isInitialized: vi.fn().mockReturnValue(true),
   isCompileSuccess: vi.fn((result: { status: string }) => result.status === "success"),
@@ -331,5 +333,66 @@ describe("H2 Language Specification", () => {
         expect(result.program.agents).toHaveLength(10);
       }
     });
+  });
+});
+
+describe("countBytes", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns byte count for valid code (basic commands)", async () => {
+    // "a:sa a" -> macro definition "a:sa" (4 bytes) + call "a" = 4 bytes effective
+    mockCountBytesFn.mockReturnValue({ status: "success", bytes: 4 });
+
+    const { countBytes } = await import("../../lib/h2lang");
+    const result = countBytes("a:sa a");
+
+    expect(mockCountBytesFn).toHaveBeenCalledWith("a:sa a");
+    expect(result.status).toBe("success");
+    if (result.status === "success") {
+      expect(result.bytes).toBe(4);
+    }
+  });
+
+  it("returns byte count for recursive function", async () => {
+    // "f(X):sa(X-1) f(10)" -> 8 effective bytes
+    mockCountBytesFn.mockReturnValue({ status: "success", bytes: 8 });
+
+    const { countBytes } = await import("../../lib/h2lang");
+    const result = countBytes("f(X):sa(X-1) f(10)");
+
+    expect(result.status).toBe("success");
+    if (result.status === "success") {
+      expect(result.bytes).toBe(8);
+    }
+  });
+
+  it("returns error for invalid syntax", async () => {
+    mockCountBytesFn.mockReturnValue({
+      status: "error",
+      message: "Unexpected token",
+    });
+
+    const { countBytes } = await import("../../lib/h2lang");
+    const result = countBytes("f(X):Xf(X-1)");
+
+    expect(result.status).toBe("error");
+    if (result.status === "error") {
+      expect(result.message).toBeDefined();
+    }
+  });
+
+  it("ignores whitespace and comments in byte count", async () => {
+    // Whitespace should not count towards bytes
+    mockCountBytesFn.mockReturnValue({ status: "success", bytes: 3 });
+
+    const { countBytes } = await import("../../lib/h2lang");
+    const result = countBytes("s r l"); // "srl" = 3 bytes
+
+    expect(result.status).toBe("success");
+    if (result.status === "success") {
+      expect(result.bytes).toBe(3);
+    }
   });
 });

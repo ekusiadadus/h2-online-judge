@@ -95,3 +95,18 @@ export interface ValidationResult {
   valid: boolean;
   errors?: CompileError[];
 }
+
+/** Successful byte count result */
+export interface CountBytesSuccess {
+  status: "success";
+  bytes: number;
+}
+
+/** Failed byte count result */
+export interface CountBytesFailure {
+  status: "error";
+  message: string;
+}
+
+/** Byte count result (success or failure) */
+export type CountBytesResult = CountBytesSuccess | CountBytesFailure;

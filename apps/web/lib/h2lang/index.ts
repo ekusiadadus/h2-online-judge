@@ -10,6 +10,8 @@ import type {
   ValidationResult,
   CompileSuccess,
   CompileFailure,
+  CountBytesResult,
+  CountBytesFailure,
 } from "./types";
 
 export type * from "./types";
@@ -22,6 +24,7 @@ let initPromise: Promise<void> | null = null;
 let h2langCompile: ((source: string) => CompileResult) | null = null;
 let h2langValidate: ((source: string) => ValidationResult) | null = null;
 let h2langVersion: (() => string) | null = null;
+let h2langCountBytes: ((source: string) => CountBytesResult) | null = null;
 
 /**
  * Initialize the h2lang WebAssembly module.
@@ -50,6 +53,7 @@ export async function initH2Lang(): Promise<void> {
       h2langCompile = h2lang.compile;
       h2langValidate = h2lang.validate;
       h2langVersion = h2lang.version;
+      h2langCountBytes = h2lang.count_bytes;
 
       wasmInitialized = true;
     } catch (error) {
@@ -187,4 +191,43 @@ export function isCompileSuccess(
  */
 export function isCompileError(result: CompileResult): result is CompileFailure {
   return result.status === "error";
+}
+
+/**
+ * Count the effective bytes in H2 language source code.
+ *
+ * This uses the h2lang compiler to parse the code and count only
+ * the meaningful bytes (excluding whitespace and comments).
+ * This is the scoring metric for code golf.
+ *
+ * @param source - The H2 language source code
+ * @returns Byte count result with count or error
+ * @throws Error if the module is not initialized
+ *
+ * @example
+ * ```ts
+ * await initH2Lang();
+ * const result = countBytes("a:sa a");
+ * if (result.status === "success") {
+ *   console.log(result.bytes); // 4
+ * }
+ * ```
+ */
+export function countBytes(source: string): CountBytesResult {
+  if (!wasmInitialized || !h2langCountBytes) {
+    throw new Error(
+      "H2Lang module not initialized. Call initH2Lang() first."
+    );
+  }
+
+  try {
+    return h2langCountBytes(source) as CountBytesResult;
+  } catch (error) {
+    // Handle unexpected errors from the WASM module
+    return {
+      status: "error",
+      message:
+        error instanceof Error ? error.message : "Unknown error counting bytes",
+    } satisfies CountBytesFailure;
+  }
 }

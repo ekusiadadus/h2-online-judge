@@ -12,9 +12,8 @@ import { SaveDraftModal } from "@/components/playground/save-draft-modal";
 import { ShareButton } from "@/components/playground/share-button";
 import { PresetSelector } from "@/components/playground/preset-selector";
 import { Button } from "@/components/ui/button";
-import { initH2Lang, compile, isInitialized } from "@/lib/h2lang";
+import { initH2Lang, compile, isInitialized, countBytes } from "@/lib/h2lang";
 import { decodeShareState } from "@/lib/share";
-import { getByteCount } from "@/lib/utils/byte-count";
 import type { Preset } from "@/lib/presets";
 import type { CompileResult, Program, Problem, Position, Direction } from "@/lib/h2lang/types";
 
@@ -89,6 +88,20 @@ function PlaygroundContent() {
 
   // Ref for animation interval
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Calculate effective byte count using WASM (code golf scoring)
+  const effectiveBytes = useMemo(() => {
+    if (!wasmReady) return null;
+    try {
+      const result = countBytes(code);
+      if (result.status === "success") {
+        return result.bytes;
+      }
+      return null; // Syntax error - show "-"
+    } catch {
+      return null;
+    }
+  }, [code, wasmReady]);
 
   // Initialize WASM on mount
   useEffect(() => {
@@ -537,7 +550,7 @@ function PlaygroundContent() {
                   {t("editor.bytes", { defaultValue: "Bytes" })}:
                 </span>
                 <span className="text-lg font-bold text-primary tabular-nums">
-                  {getByteCount(code)}
+                  {effectiveBytes !== null ? effectiveBytes : "-"}
                 </span>
               </div>
             </div>
@@ -562,7 +575,7 @@ function PlaygroundContent() {
             className="h-full"
             visitedGoals={visitedGoals.length}
             totalGoals={problem.goals.length}
-            byteCount={getByteCount(code)}
+            byteCount={effectiveBytes ?? 0}
           />
         </div>
       </div>
