@@ -1,0 +1,53 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":separateMajorReleases",
+    ":automergePatch",
+    ":disableRateLimiting"
+  ],
+  "rangeStrategy": "replace",
+  "osvVulnerabilityAlerts": true,
+  "dependencyDashboard": true,
+  "platformAutomerge": true,
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "matchPaths": ["apps/**", "packages/**"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    },
+    {
+      "description": "Group Next.js, React and related UI updates",
+      "matchManagers": ["npm"],
+      "matchPackagePatterns": [
+        "^next$",
+        "^react$",
+        "^react-dom$",
+        "^@next/",
+        "^next-intl$",
+        "^next-themes$"
+      ],
+      "groupName": "next-react",
+      "separateMajorMinor": false
+    },
+    {
+      "description": "Group tooling updates",
+      "matchManagers": ["npm"],
+      "matchPackagePatterns": [
+        "^typescript$",
+        "^eslint",
+        "^@typescript-eslint/",
+        "^prettier$",
+        "^turbo$"
+      ],
+      "groupName": "tooling"
+    }
+  ],
+  "npm": {
+    "pnpm": {
+      "enabled": true
+    }
+  }
+}
