@@ -7,3 +7,4 @@ import { Auth0Client } from "@auth0/nextjs-auth0/server";
 // - AUTH0_SECRET
 // - APP_BASE_URL
 export const auth0 = new Auth0Client();
+import 'server-only';

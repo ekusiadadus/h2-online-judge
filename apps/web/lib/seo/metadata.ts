@@ -23,7 +23,9 @@ export type Locale = (typeof SUPPORTED_LOCALES)[number];
  */
 export function getBaseUrl(): string {
   return (
-    process.env.NEXT_PUBLIC_BASE_URL || "https://h2-online-judge.vercel.app"
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    process.env.APP_BASE_URL ||
+    "https://h2-online-judge.vercel.app"
   );
 }
 

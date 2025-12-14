@@ -123,3 +123,4 @@ export async function getOptionalUser() {
     return null;
   }
 }
+import 'server-only';

@@ -70,3 +70,4 @@ export async function countBytesServer(source: string): Promise<number> {
     return new TextEncoder().encode(source).length;
   }
 }
+import 'server-only';
