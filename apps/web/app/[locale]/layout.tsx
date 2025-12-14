@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import localFont from "next/font/local";
 import { routing } from "@/i18n/routing";
 import { Header, Footer } from "@/components/layout";
+import { UsernameGuard } from "@/components/auth";
 import {
   getBaseUrl,
   getAlternateLanguages,
@@ -120,6 +121,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col`}
       >
         <NextIntlClientProvider messages={messages}>
+          <UsernameGuard />
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
