@@ -10,9 +10,11 @@ import { OutputPanel } from "@/components/playground/output-panel";
 import { ToolPalette, type ToolType } from "@/components/playground/tool-palette";
 import { SaveDraftModal } from "@/components/playground/save-draft-modal";
 import { ShareButton } from "@/components/playground/share-button";
+import { PresetSelector } from "@/components/playground/preset-selector";
 import { Button } from "@/components/ui/button";
 import { initH2Lang, compile, isInitialized } from "@/lib/h2lang";
 import { decodeShareState } from "@/lib/share";
+import type { Preset } from "@/lib/presets";
 import type { CompileResult, Program, Problem, Position, Direction } from "@/lib/h2lang/types";
 
 /** Grid size (Herbert Online Judge specification) */
@@ -349,6 +351,16 @@ function PlaygroundContent() {
     setSelectedTool(tool);
   }, []);
 
+  // Handle preset selection
+  const handlePresetSelect = useCallback((preset: Preset) => {
+    setCode(preset.sampleCode);
+    setProblem(preset.problem);
+    setCurrentStep(0);
+    setCompileResult(null);
+    setIsRunning(false);
+    setEditMode(false);
+  }, []);
+
   // Handle cell click in edit mode
   const handleCellClick = useCallback((x: number, y: number) => {
     setProblem((prev) => {
@@ -438,13 +450,14 @@ function PlaygroundContent() {
     <div className="flex flex-col p-4 gap-4">
       {/* Tool Palette, Save Draft, and Control Panel */}
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <ToolPalette
             selectedTool={selectedTool}
             onToolSelect={handleToolSelect}
             editMode={editMode}
             onEditModeToggle={handleEditModeToggle}
           />
+          <PresetSelector onSelect={handlePresetSelect} />
           <ShareButton code={code} problem={problem} />
           <Button
             variant="outline"

@@ -88,6 +88,21 @@
       "invalidCode": "Invalid share code",
       "loadError": "Failed to load share code"
     },
+    "presets": {
+      "label": "Presets",
+      "easy": {
+        "name": "Easy",
+        "description": "Move forward to reach the goal"
+      },
+      "medium": {
+        "name": "Medium",
+        "description": "Navigate around the wall to reach the goal"
+      },
+      "hard": {
+        "name": "Hard",
+        "description": "Collect all goals while avoiding traps"
+      }
+    },
     "saveDraft": {
       "button": "Save as Draft",
       "title": "Save Problem Draft",

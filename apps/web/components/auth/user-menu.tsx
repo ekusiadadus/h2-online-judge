@@ -41,8 +41,9 @@ export function UserMenu({ user, className }: UserMenuProps) {
     };
   }, []);
 
-  const displayName = user.username || user.name || user.email.split("@")[0] || "U";
-  const initials = displayName.slice(0, 2).toUpperCase();
+  // Use username for initials if available
+  const initialsSource = user.username || user.name || user.email.split("@")[0] || "U";
+  const initials = initialsSource.slice(0, 2).toUpperCase();
 
   return (
     <div className={cn("relative", className)} ref={menuRef}>
@@ -60,7 +61,9 @@ export function UserMenu({ user, className }: UserMenuProps) {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 rounded-md border border-border bg-background shadow-lg z-50">
           <div className="p-3 border-b border-border">
-            <p className="text-sm font-medium truncate">{displayName}</p>
+            <p className="text-sm font-medium truncate">
+              {user.username ? `@${user.username}` : (user.name || user.email.split("@")[0])}
+            </p>
             <p className="text-xs text-muted-foreground truncate">
               {user.email}
             </p>

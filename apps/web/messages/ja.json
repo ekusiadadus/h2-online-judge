@@ -88,6 +88,21 @@
       "invalidCode": "無効な共有コードです",
       "loadError": "共有コードの読み込みに失敗しました"
     },
+    "presets": {
+      "label": "プリセット",
+      "easy": {
+        "name": "かんたん",
+        "description": "前進してゴールに到達しよう"
+      },
+      "medium": {
+        "name": "ふつう",
+        "description": "壁を避けてゴールに到達しよう"
+      },
+      "hard": {
+        "name": "むずかしい",
+        "description": "トラップを避けて全てのゴールを集めよう"
+      }
+    },
     "saveDraft": {
       "button": "下書き保存",
       "title": "問題を下書き保存",
