@@ -543,19 +543,17 @@ function PlaygroundContent() {
         />
       </div>
 
-      {/* Problem info bar */}
-      {problem.goals.length > 0 && (
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-foreground">
-            {t("grid.targetsLabel", { defaultValue: "Targets" })}: <span className="font-bold">{visitedGoals.length}</span> / {problem.goals.length}
+      {/* Problem info bar - fixed height to prevent layout shift */}
+      <div className={`flex items-center gap-4 text-sm h-5 ${problem.goals.length === 0 ? "invisible" : ""}`}>
+        <span className="text-foreground">
+          {t("grid.targetsLabel", { defaultValue: "Targets" })}: <span className="font-bold">{visitedGoals.length}</span> / {problem.goals.length}
+        </span>
+        {allGoalsVisited && (
+          <span className="text-green-600 font-medium">
+            {t("grid.allTargetsReached", { defaultValue: "✓ All targets reached!" })}
           </span>
-          {allGoalsVisited && (
-            <span className="text-green-600 font-medium">
-              {t("grid.allTargetsReached", { defaultValue: "✓ All targets reached!" })}
-            </span>
-          )}
-        </div>
-      )}
+        )}
+      </div>
 
       
 
