@@ -1,135 +1,111 @@
-# Turborepo starter
+# H2 Online Judge
 
-This Turborepo starter is maintained by the Turborepo core team.
+[![CI](https://github.com/ekusiadadus/h2-online-judge/actions/workflows/ci.yml/badge.svg)](https://github.com/ekusiadadus/h2-online-judge/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-## Using this example
+> A visual online judge for the H2 programming language — control robots with minimal code, powered by Rust/WebAssembly.
 
-Run the following command:
+## Features
 
-```sh
-npx create-turbo@latest
+- **HOJ-Compatible H2 Language**: Based on the Herbert Online Judge language with extended features
+- **Multi-Agent Support**: Control multiple robots simultaneously with parallel execution
+- **Visual Execution**: Watch your code run step-by-step on a 25x25 grid
+- **Problem Editor**: Create and share custom puzzles with goals, walls, and traps
+- **Fully Client-Side**: Runs entirely in the browser using WebAssembly — fast and secure
+- **Internationalization**: Available in English and Japanese
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 22+
+- pnpm 9+
+
+### Development
+
+```bash
+# Clone the repository
+git clone https://github.com/ekusiadadus/h2-online-judge.git
+cd h2-online-judge
+
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
 ```
 
-## What's inside?
+Open [http://localhost:4000](http://localhost:4000) in your browser.
 
-This Turborepo includes the following packages/apps:
+## H2 Language Overview
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
+H2 is a minimal robot programming language:
 
 ```
-cd my-turborepo
+# Basic commands
+s     # Move straight (forward)
+r     # Rotate right (90°)
+l     # Rotate left (90°)
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
+# Repeat
+sss   # Move forward 3 times
+rr    # Rotate 180°
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+# Macros (uppercase names)
+M: ss r ss l
+M M   # Execute macro twice
+
+# Functions with parameters
+F(n): s F(n-1)
+F(n=0):
+F(5)  # Move forward 5 times (recursive)
+
+# Multi-agent
+@0: sss
+@1: rrr
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+## Architecture
 
 ```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+h2-online-judge/
+├── apps/
+│   ├── web/          # Next.js 16 frontend
+│   └── docs/         # Documentation site
+├── h2lang/           # Rust compiler (WASM)
+└── packages/
+    ├── ui/           # Shared UI components
+    ├── eslint-config/
+    └── typescript-config/
 ```
 
-### Develop
+### Tech Stack
 
-To develop all apps and packages, run the following command:
+- **Frontend**: Next.js 16, React 19, Tailwind CSS v4
+- **Compiler**: Rust, wasm-bindgen, wasm-pack
+- **Database**: Turso (libSQL)
+- **Auth**: Auth0
+- **i18n**: next-intl
 
-```
-cd my-turborepo
+## Contributing
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
+Contributions are welcome! Please see our contributing guidelines.
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
+### Development Commands
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+```bash
+pnpm dev          # Start development server
+pnpm build        # Build for production
+pnpm test         # Run tests
+pnpm lint         # Lint code
+pnpm check-types  # Type check
 ```
 
-### Remote Caching
+## Acknowledgments
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+- [Herbert Online Judge](https://herbert.tealang.info/) - Original H2 language specification
+- [HOJ](https://kk.rulez.sk/~visual/hoj/) - Inspiration for visual programming education
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+## License
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+MIT License - see [LICENSE](LICENSE) for details.
