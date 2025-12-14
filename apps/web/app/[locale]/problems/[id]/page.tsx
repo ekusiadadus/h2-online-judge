@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Grid } from "@/components/playground/grid";
 import { CodeEditor } from "@/components/playground/code-editor";
 import { cn } from "@/lib/utils";
-import { initH2Lang, compile, isInitialized } from "@/lib/h2lang";
+import { initH2Lang, compile, isInitialized, countBytes } from "@/lib/h2lang";
 import type { CompileResult, Program, Problem, Position, Direction } from "@/lib/h2lang/types";
 
 interface PageProps {
@@ -100,6 +100,20 @@ export default function ProblemSolvePage({ params }: PageProps) {
 
   // Ref for animation interval
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Calculate effective byte count using WASM (code golf scoring)
+  const effectiveBytes = useMemo(() => {
+    if (!wasmReady) return null;
+    try {
+      const result = countBytes(code);
+      if (result.status === "success") {
+        return result.bytes;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }, [code, wasmReady]);
 
   // Resolve params
   useEffect(() => {
@@ -587,7 +601,7 @@ export default function ProblemSolvePage({ params }: PageProps) {
                   <strong className="text-green-600 dark:text-green-400">{t("solve.accepted")}</strong>
                   {submitResult.stepCount && (
                     <span className="ml-2 text-muted-foreground">
-                      Steps: {submitResult.stepCount}, Bytes: {new TextEncoder().encode(code).length}
+                      Steps: {submitResult.stepCount}, Bytes: {effectiveBytes ?? "-"}
                     </span>
                   )}
                 </>

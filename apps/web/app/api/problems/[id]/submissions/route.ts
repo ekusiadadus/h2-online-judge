@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { problems, submissions, users } from "@/db/schema";
 import { getCurrentUser, AuthError } from "@/lib/auth";
+import { countBytesServer } from "@/lib/h2lang/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -44,7 +45,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const body = await request.json();
     const validated = submitSchema.parse(body);
 
-    const codeLength = new TextEncoder().encode(validated.code).length;
+    // Use WASM count_bytes for accurate code golf scoring (excludes whitespace/comments)
+    const codeLength = await countBytesServer(validated.code);
 
     // Determine status based on client result
     // In a real system, we'd verify server-side, but for now trust client
