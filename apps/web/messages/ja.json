@@ -91,7 +91,22 @@
     "logout": "ログアウト",
     "profile": "プロフィール",
     "settings": "設定",
-    "admin": "管理者"
+    "admin": "管理者",
+    "setupUsername": {
+      "title": "ユーザー名を設定",
+      "subtitle": "ランキングで表示される一意の識別子です",
+      "placeholder": "ユーザー名を入力",
+      "requirements": "3〜20文字、小文字英字・数字・アンダースコアのみ。英字で始める必要があります。",
+      "checking": "確認中...",
+      "available": "利用可能です",
+      "taken": "既に使用されています",
+      "invalid": "無効な形式です",
+      "submit": "ユーザー名を設定",
+      "submitting": "設定中...",
+      "success": "ユーザー名を設定しました！",
+      "error": "設定に失敗しました",
+      "cannotChange": "※ユーザー名は一度設定すると変更できません"
+    }
   },
   "problems": {
     "title": "問題一覧",
@@ -124,7 +139,8 @@
       "steps": "ステップ",
       "bytes": "バイト",
       "userName": "ユーザー名",
-      "date": "日付"
+      "date": "日付",
+      "setUsernameFirst": "先にユーザー名を設定"
     }
   },
   "admin": {

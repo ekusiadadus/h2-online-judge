@@ -98,7 +98,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         rank: currentRank,
         stepCount: step,
         codeLength: length,
-        userName: sub.user?.name || sub.user?.email?.split("@")[0] || "Anonymous",
+        userName: sub.user?.username || sub.user?.name || sub.user?.email?.split("@")[0] || "Anonymous",
         date: sub.createdAt.toISOString(),
       });
 

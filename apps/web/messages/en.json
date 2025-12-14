@@ -91,7 +91,22 @@
     "logout": "Logout",
     "profile": "Profile",
     "settings": "Settings",
-    "admin": "Admin"
+    "admin": "Admin",
+    "setupUsername": {
+      "title": "Choose Your Username",
+      "subtitle": "This will be your unique identifier on the leaderboard",
+      "placeholder": "Enter username",
+      "requirements": "3-20 characters, lowercase letters, numbers, and underscores only. Must start with a letter.",
+      "checking": "Checking availability...",
+      "available": "Username is available",
+      "taken": "Username is already taken",
+      "invalid": "Invalid username format",
+      "submit": "Set Username",
+      "submitting": "Setting...",
+      "success": "Username set successfully!",
+      "error": "Failed to set username",
+      "cannotChange": "Note: Username cannot be changed once set"
+    }
   },
   "problems": {
     "title": "Problems",
@@ -124,7 +139,8 @@
       "steps": "Steps",
       "bytes": "Bytes",
       "userName": "User Name",
-      "date": "Date"
+      "date": "Date",
+      "setUsernameFirst": "Set Username First"
     }
   },
   "admin": {

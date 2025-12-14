@@ -46,7 +46,8 @@ interface LeaderboardData {
 
 interface User {
   id: string;
-  displayName?: string;
+  username?: string | null;
+  name?: string | null;
   role: "user" | "admin";
 }
 
@@ -560,13 +561,22 @@ export default function ProblemSolvePage({ params }: PageProps) {
             <Button variant="outline" onClick={handleReset}>
               {tPlayground("controls.reset")}
             </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!user || submitting}
-              className="ml-auto bg-green-600 hover:bg-green-700"
-            >
-              {submitting ? t("solve.submitting") : t("solve.submit")}
-            </Button>
+            {user && !user.username ? (
+              <Link
+                href="/setup-username"
+                className="ml-auto inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium bg-amber-600 text-white hover:bg-amber-700"
+              >
+                {t("solve.setUsernameFirst")}
+              </Link>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={!user || submitting}
+                className="ml-auto bg-green-600 hover:bg-green-700"
+              >
+                {submitting ? t("solve.submitting") : t("solve.submit")}
+              </Button>
+            )}
           </div>
 
           {/* Submit result */}

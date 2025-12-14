@@ -24,6 +24,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const { id: problemId } = await params;
     const user = await getCurrentUser();
 
+    // Require username to submit
+    if (!user.username) {
+      return NextResponse.json(
+        { error: "Username must be set before submitting" },
+        { status: 400 }
+      );
+    }
+
     // Check if problem exists and is published
     const problem = await db.query.problems.findFirst({
       where: eq(problems.id, problemId),
