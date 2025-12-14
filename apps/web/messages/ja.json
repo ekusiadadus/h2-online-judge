@@ -53,7 +53,8 @@
     "title": "プレイグラウンド",
     "editor": {
       "title": "コード",
-      "placeholder": "H2コードを入力してください\n例: 0: srl"
+      "placeholder": "H2コードを入力してください\n例: 0: srl",
+      "bytes": "バイト"
     },
     "grid": {
       "title": "グリッド",

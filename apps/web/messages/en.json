@@ -53,7 +53,8 @@
     "title": "Playground",
     "editor": {
       "title": "Code",
-      "placeholder": "Enter H2 code here\nExample: 0: srl"
+      "placeholder": "Enter H2 code here\nExample: 0: srl",
+      "bytes": "Bytes"
     },
     "grid": {
       "title": "Grid",

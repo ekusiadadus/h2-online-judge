@@ -14,6 +14,7 @@ import { PresetSelector } from "@/components/playground/preset-selector";
 import { Button } from "@/components/ui/button";
 import { initH2Lang, compile, isInitialized } from "@/lib/h2lang";
 import { decodeShareState } from "@/lib/share";
+import { getByteCount } from "@/lib/utils/byte-count";
 import type { Preset } from "@/lib/presets";
 import type { CompileResult, Program, Problem, Position, Direction } from "@/lib/h2lang/types";
 
@@ -520,14 +521,27 @@ function PlaygroundContent() {
 
         {/* Code Editor */}
         <div className="flex flex-col lg:col-span-5">
-          <h2 className="text-sm font-medium mb-2 text-muted-foreground">
-            {t("editor.title", { defaultValue: "Code" })}
-            {!wasmReady && (
-              <span className="ml-2 text-xs text-muted-foreground">
-                (Loading compiler...)
-              </span>
-            )}
-          </h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              {t("editor.title", { defaultValue: "Code" })}
+              {!wasmReady && (
+                <span className="ml-2 text-xs text-muted-foreground">
+                  (Loading compiler...)
+                </span>
+              )}
+            </h2>
+            {/* Byte count display - CODE GOLF SCORE */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-primary/10 border border-primary/20">
+                <span className="text-xs font-medium text-muted-foreground">
+                  {t("editor.bytes", { defaultValue: "Bytes" })}:
+                </span>
+                <span className="text-lg font-bold text-primary tabular-nums">
+                  {getByteCount(code)}
+                </span>
+              </div>
+            </div>
+          </div>
           <CodeEditor
             value={code}
             onChange={setCode}
@@ -548,6 +562,7 @@ function PlaygroundContent() {
             className="h-full"
             visitedGoals={visitedGoals.length}
             totalGoals={problem.goals.length}
+            byteCount={getByteCount(code)}
           />
         </div>
       </div>

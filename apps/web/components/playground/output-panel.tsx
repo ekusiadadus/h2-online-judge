@@ -28,6 +28,8 @@ interface OutputPanelProps {
   visitedGoals?: number;
   /** Total number of goals */
   totalGoals?: number;
+  /** Code byte count for scoring */
+  byteCount?: number;
 }
 
 /**
@@ -239,6 +241,7 @@ export function OutputPanel({
   className,
   visitedGoals = 0,
   totalGoals = 0,
+  byteCount = 0,
 }: OutputPanelProps) {
   const t = useTranslations("playground.output");
 
@@ -297,6 +300,20 @@ export function OutputPanel({
                 <span>
                   Agents: {program.agents.length}
                 </span>
+              </div>
+            </div>
+
+            {/* Byte count display - CODE GOLF SCORE */}
+            <div className="flex items-center gap-3 py-2 px-3 rounded-lg bg-accent/50 border border-border">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-medium text-muted-foreground">Score:</span>
+                <span className="text-2xl font-bold text-primary tabular-nums">
+                  {byteCount}
+                </span>
+                <span className="text-xs text-muted-foreground">bytes</span>
+              </div>
+              <div className="text-[10px] text-muted-foreground/70">
+                (lower is better)
               </div>
             </div>
 
