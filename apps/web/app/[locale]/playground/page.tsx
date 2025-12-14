@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CodeEditor } from "@/components/playground/code-editor";
 import { Grid } from "@/components/playground/grid";
@@ -8,8 +9,10 @@ import { ControlPanel } from "@/components/playground/control-panel";
 import { OutputPanel } from "@/components/playground/output-panel";
 import { ToolPalette, type ToolType } from "@/components/playground/tool-palette";
 import { SaveDraftModal } from "@/components/playground/save-draft-modal";
+import { ShareButton } from "@/components/playground/share-button";
 import { Button } from "@/components/ui/button";
 import { initH2Lang, compile, isInitialized } from "@/lib/h2lang";
+import { decodeShareState } from "@/lib/share";
 import type { CompileResult, Program, Problem, Position, Direction } from "@/lib/h2lang/types";
 
 /** Grid size (Herbert Online Judge specification) */
@@ -43,12 +46,14 @@ function removePosition(positions: Position[], x: number, y: number): Position[]
  * │  Output Panel                               │
  * └─────────────────────────────────────────────┘
  */
-export default function PlaygroundPage() {
+function PlaygroundContent() {
   const t = useTranslations("playground");
+  const searchParams = useSearchParams();
 
   // WASM initialization state
   const [wasmReady, setWasmReady] = useState(false);
   const [wasmError, setWasmError] = useState<string | null>(null);
+  const [shareLoaded, setShareLoaded] = useState(false);
 
   // Code state (single agent can omit "0:" prefix in h2lang v0.2.0+)
   const [code, setCode] = useState("srl");
@@ -98,6 +103,28 @@ export default function PlaygroundPage() {
         setWasmError(error.message);
       });
   }, []);
+
+  // Load shared state from URL parameter
+  useEffect(() => {
+    if (shareLoaded) return;
+
+    const shareCode = searchParams.get("s");
+    if (!shareCode) {
+      setShareLoaded(true);
+      return;
+    }
+
+    const result = decodeShareState(shareCode);
+    if (result.success) {
+      setCode(result.state.code);
+      if (result.state.problem) {
+        setProblem(result.state.problem);
+      }
+    } else {
+      console.error("Failed to decode share code:", result.error);
+    }
+    setShareLoaded(true);
+  }, [searchParams, shareLoaded]);
 
   // Handle code compilation using real h2lang WASM
   const handleCompile = useCallback(() => {
@@ -418,6 +445,7 @@ export default function PlaygroundPage() {
             editMode={editMode}
             onEditModeToggle={handleEditModeToggle}
           />
+          <ShareButton code={code} problem={problem} />
           <Button
             variant="outline"
             size="sm"
@@ -518,6 +546,29 @@ export default function PlaygroundPage() {
         problem={problem}
         code={code}
       />
+    </div>
+  );
+}
+
+/**
+ * Playground page wrapper with Suspense boundary.
+ * Required for useSearchParams() to work during static generation.
+ */
+export default function PlaygroundPage() {
+  return (
+    <Suspense fallback={<PlaygroundLoading />}>
+      <PlaygroundContent />
+    </Suspense>
+  );
+}
+
+/**
+ * Loading fallback for the playground page.
+ */
+function PlaygroundLoading() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px]">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
     </div>
   );
 }

@@ -82,6 +82,12 @@
       "error": "Compile error",
       "waiting": "Press Run or Step to compile and execute"
     },
+    "share": {
+      "button": "Share",
+      "copied": "Copied!",
+      "invalidCode": "Invalid share code",
+      "loadError": "Failed to load share code"
+    },
     "saveDraft": {
       "button": "Save as Draft",
       "title": "Save Problem Draft",
