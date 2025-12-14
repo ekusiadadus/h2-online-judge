@@ -40,4 +40,5 @@ yarn-error.log*
 # h2lang directory (submodule or external)
 /h2lang/
 docs/RULE.md
+docs/SEO_IMPLEMENTATION_PLAN.md
 ARCHITECTURE.md
