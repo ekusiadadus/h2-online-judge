@@ -201,6 +201,30 @@
       "setUsernameFirst": "先にユーザー名を設定"
     }
   },
+  "about": {
+    "title": "このサイトについて",
+    "subtitle": "H2 Online Judge について",
+    "description": "H2 Online Judge は Herbert Online Judge (HOJ) にインスパイアされたオンラインジャッジシステムです。H2言語を使ってロボットをプログラミングし、様々なチャレンジを解くことができます。",
+    "acknowledgment": {
+      "title": "謝辞",
+      "hoj": {
+        "title": "Herbert Online Judge",
+        "description": "このプロジェクトは、高校時代に出会った素晴らしいプログラミングゲーム「Herbert Online Judge (HOJ)」にインスパイアされて作られました。HOJとの出会いは、プログラミングへの情熱を燃え上がらせ、やがてソフトウェア開発者としてのキャリアを歩むきっかけとなった、人生の転機でした。",
+        "memory": "HOJは私の青春の一コマとして、心の中に特別な場所を占めています。パズルを解く喜び、コードを最適化する満足感、リーダーボードを駆け上がる興奮——これらの経験が、今日の開発者としての私を形作りました。",
+        "gratitude": "Herbert Online Judge の制作者の方々に、このような素晴らしく教育的なプラットフォームを作ってくださったことに、心から感謝しています。H2 Online Judge は、あの素晴らしい体験への私なりのオマージュです。"
+      }
+    },
+    "author": {
+      "title": "作者",
+      "name": "ekusiadadus",
+      "email": "ekusiadadus@gmail.com",
+      "github": "https://github.com/ekusiadadus"
+    },
+    "license": {
+      "title": "ライセンス",
+      "description": "このプロジェクトはオープンソースであり、MITライセンスの下で公開されています。"
+    }
+  },
   "admin": {
     "problems": {
       "list": {

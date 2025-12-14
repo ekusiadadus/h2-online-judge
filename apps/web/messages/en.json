@@ -201,6 +201,30 @@
       "setUsernameFirst": "Set Username First"
     }
   },
+  "about": {
+    "title": "About",
+    "subtitle": "About H2 Online Judge",
+    "description": "H2 Online Judge is an online judge system inspired by Herbert Online Judge (HOJ). It allows you to program robots using the H2 language and solve various challenges.",
+    "acknowledgment": {
+      "title": "Acknowledgments",
+      "hoj": {
+        "title": "Herbert Online Judge",
+        "description": "This project was inspired by Herbert Online Judge (HOJ), a wonderful programming game that I discovered during my high school years. Playing HOJ was one of the defining moments that sparked my passion for programming and eventually led me to pursue a career in software development.",
+        "memory": "HOJ holds a special place in my heart as a cherished memory of my youth. The joy of solving puzzles, the satisfaction of optimizing code, and the excitement of climbing the leaderboards - these experiences shaped who I am today as a developer.",
+        "gratitude": "I am deeply grateful to the creators of Herbert Online Judge for creating such an inspiring and educational platform. H2 Online Judge is my tribute to that wonderful experience."
+      }
+    },
+    "author": {
+      "title": "Author",
+      "name": "ekusiadadus",
+      "email": "ekusiadadus@gmail.com",
+      "github": "https://github.com/ekusiadadus"
+    },
+    "license": {
+      "title": "License",
+      "description": "This project is open source and available under the MIT License."
+    }
+  },
   "admin": {
     "problems": {
       "list": {
