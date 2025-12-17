@@ -584,14 +584,17 @@ function PlaygroundContent() {
       <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] xl:grid-cols-[52%_48%] gap-4">
         {/* Left: Grid Visualization */}
         <div className="flex flex-col">
-          <h2 className="text-sm font-medium mb-2 text-muted-foreground">
-            {t("grid.title", { defaultValue: "Grid" })}
-            {editMode && (
-              <span className="ml-2 text-xs text-primary">
-                {t("grid.editModeLabel", { defaultValue: "(Edit Mode)" })}
-              </span>
-            )}
-          </h2>
+          {/* Header row - fixed height to align with code section */}
+          <div className="flex items-center justify-between h-8 mb-2">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              {t("grid.title", { defaultValue: "Grid" })}
+              {editMode && (
+                <span className="ml-2 text-xs text-primary">
+                  {t("grid.editModeLabel", { defaultValue: "(Edit Mode)" })}
+                </span>
+              )}
+            </h2>
+          </div>
           {/* Grid container - max-w to prevent being too large on mobile */}
           <div className="w-full max-w-[600px] mx-auto lg:mx-0 lg:max-w-none">
             <Grid
@@ -611,7 +614,8 @@ function PlaygroundContent() {
         <div className="flex flex-col min-h-0 lg:h-auto">
           {/* Code Editor Section */}
           <div className="flex flex-col flex-1 min-h-0" data-testid="code-section">
-            <div className="flex items-center justify-between mb-2">
+            {/* Header row - fixed height to align with grid section */}
+            <div className="flex items-center justify-between h-8 mb-2">
               <h2 className="text-sm font-medium text-muted-foreground">
                 {t("editor.title", { defaultValue: "Code" })}
                 {!wasmReady && (
@@ -621,15 +625,13 @@ function PlaygroundContent() {
                 )}
               </h2>
               {/* Byte count display - CODE GOLF SCORE */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-primary/10 border border-primary/20">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {t("editor.bytes", { defaultValue: "Bytes" })}:
-                  </span>
-                  <span className="text-lg font-bold text-primary tabular-nums">
-                    {effectiveBytes !== null ? effectiveBytes : "-"}
-                  </span>
-                </div>
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20">
+                <span className="text-xs font-medium text-muted-foreground">
+                  {t("editor.bytes", { defaultValue: "Bytes" })}:
+                </span>
+                <span className="text-sm font-bold text-primary tabular-nums">
+                  {effectiveBytes !== null ? effectiveBytes : "-"}
+                </span>
               </div>
             </div>
             <CodeEditor
