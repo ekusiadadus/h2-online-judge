@@ -77,7 +77,13 @@
       "step": "ステップ",
       "reset": "リセット",
       "speed": "速度",
-      "path": "経路"
+      "path": "経路",
+      "status": {
+        "ready": "待機中",
+        "running": "実行中",
+        "success": "完了",
+        "error": "エラー"
+      }
     },
     "output": {
       "title": "出力",
@@ -93,7 +99,14 @@
       "lowerIsBetter": "(少ないほど良い)",
       "points": "ポイント",
       "successAllTargets": "成功！すべてのターゲットに到達！",
-      "failedTargetsRemaining": "失敗：残り{count}ターゲット"
+      "failedTargetsRemaining": "失敗：残り{count}ターゲット",
+      "tabs": {
+        "console": "コンソール",
+        "problems": "問題",
+        "timeline": "タイムライン"
+      },
+      "noProblems": "問題は検出されませんでした",
+      "noTimeline": "タイムラインはありません。コードを実行してください"
     },
     "share": {
       "button": "共有",

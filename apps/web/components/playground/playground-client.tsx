@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef, useMemo, Suspense } from "react";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { CodeEditor } from "@/components/playground/code-editor";
+import { CodeEditor, type CodeEditorRef } from "@/components/playground/code-editor";
 import { Grid } from "@/components/playground/grid";
-import { ControlPanel } from "@/components/playground/control-panel";
+import { ControlPanel, type ExecutionStatus } from "@/components/playground/control-panel";
 import { OutputPanel } from "@/components/playground/output-panel";
 import { ToolPalette, type ToolType } from "@/components/playground/tool-palette";
 import { SaveDraftModal } from "@/components/playground/save-draft-modal";
@@ -75,6 +76,7 @@ function PlaygroundContent() {
   const [editMode, setEditMode] = useState(false);
   const [selectedTool, setSelectedTool] = useState<ToolType>("goal");
   const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
+  const [outputCollapsed, setOutputCollapsed] = useState(false);
   const [problem, setProblem] = useState<Problem>({
     goals: [],
     walls: [],
@@ -88,6 +90,14 @@ function PlaygroundContent() {
 
   // Ref for animation interval
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Ref for code editor (to jump to error lines)
+  const codeEditorRef = useRef<CodeEditorRef>(null);
+
+  // Handle error click - jump to line in editor
+  const handleErrorClick = useCallback((line: number, column: number) => {
+    codeEditorRef.current?.goToLine(line, column);
+  }, []);
 
   // Calculate effective byte count using WASM (code golf scoring)
   const effectiveBytes = useMemo(() => {
@@ -494,6 +504,16 @@ function PlaygroundContent() {
   const program: Program | null =
     compileResult?.status === "success" ? compileResult.program : null;
 
+  // Calculate execution status for status badge
+  const executionStatus: ExecutionStatus = useMemo(() => {
+    if (isRunning) return "running";
+    if (compileResult?.status === "error") return "error";
+    if (compileResult?.status === "success" && currentStep >= (program?.max_steps ?? 0)) {
+      return "success";
+    }
+    return "ready";
+  }, [isRunning, compileResult, currentStep, program?.max_steps]);
+
   // Calculate remaining goals
   const remainingGoals = problem.goals.length - visitedGoals.length;
   const allGoalsVisited = problem.goals.length > 0 && remainingGoals === 0;
@@ -508,7 +528,7 @@ function PlaygroundContent() {
   }
 
   return (
-    <div className="flex flex-col p-4 gap-4">
+    <div className="flex flex-col p-4 gap-4 max-w-7xl mx-auto">
       {/* Tool Palette, Save Draft, and Control Panel */}
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
         <div className="flex flex-wrap items-center gap-4">
@@ -539,6 +559,9 @@ function PlaygroundContent() {
           showPath={showPath}
           onShowPathChange={setShowPath}
           disabled={!wasmReady}
+          status={executionStatus}
+          currentStep={currentStep}
+          maxSteps={program?.max_steps}
         />
       </div>
 
@@ -556,10 +579,10 @@ function PlaygroundContent() {
 
 
 
-      {/* Main content area - 3 column layout with custom widths */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Grid Visualization */}
-        <div className="flex flex-col lg:col-span-5">
+      {/* Main content area - 2 column layout (Grid | Code+Output) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Left: Grid Visualization */}
+        <div className="flex flex-col">
           <h2 className="text-sm font-medium mb-2 text-muted-foreground">
             {t("grid.title", { defaultValue: "Grid" })}
             {editMode && (
@@ -580,51 +603,75 @@ function PlaygroundContent() {
           />
         </div>
 
-        {/* Code Editor */}
-        <div className="flex flex-col lg:col-span-5">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-medium text-muted-foreground">
-              {t("editor.title", { defaultValue: "Code" })}
-              {!wasmReady && (
-                <span className="ml-2 text-xs text-muted-foreground">
-                  (Loading compiler...)
-                </span>
-              )}
-            </h2>
-            {/* Byte count display - CODE GOLF SCORE */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-primary/10 border border-primary/20">
-                <span className="text-xs font-medium text-muted-foreground">
-                  {t("editor.bytes", { defaultValue: "Bytes" })}:
-                </span>
-                <span className="text-lg font-bold text-primary tabular-nums">
-                  {effectiveBytes !== null ? effectiveBytes : "-"}
-                </span>
+        {/* Right: Code Editor + Output Panel (vertical split like VSCode) */}
+        <div className="flex flex-col min-h-0 lg:h-[700px]">
+          {/* Code Editor Section */}
+          <div className="flex flex-col flex-1 min-h-0" data-testid="code-section">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-medium text-muted-foreground">
+                {t("editor.title", { defaultValue: "Code" })}
+                {!wasmReady && (
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    (Loading compiler...)
+                  </span>
+                )}
+              </h2>
+              {/* Byte count display - CODE GOLF SCORE */}
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-primary/10 border border-primary/20">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {t("editor.bytes", { defaultValue: "Bytes" })}:
+                  </span>
+                  <span className="text-lg font-bold text-primary tabular-nums">
+                    {effectiveBytes !== null ? effectiveBytes : "-"}
+                  </span>
+                </div>
               </div>
             </div>
+            <CodeEditor
+              ref={codeEditorRef}
+              value={code}
+              onChange={setCode}
+              placeholder={t("editor.placeholder")}
+              className="flex-1 min-h-[200px]"
+              disabled={!wasmReady}
+            />
           </div>
-          <CodeEditor
-            value={code}
-            onChange={setCode}
-            placeholder={t("editor.placeholder")}
-            className="h-full min-h-[600px]"
-            disabled={!wasmReady}
-          />
-        </div>
 
-        {/* Output Panel */}
-        <div className="flex flex-col lg:col-span-2">
-          <h2 className="text-sm font-medium mb-2 text-muted-foreground">
-            {t("output.title", { defaultValue: "Output" })}
-          </h2>
-          <OutputPanel
-            compileResult={compileResult}
-            currentStep={currentStep}
-            className="h-full"
-            visitedGoals={visitedGoals.length}
-            totalGoals={problem.goals.length}
-            byteCount={effectiveBytes ?? 0}
-          />
+          {/* Output Panel Section (below code editor, like VSCode terminal) */}
+          <div
+            className={`flex flex-col mt-2 border-t border-border pt-2 transition-all duration-200 ${outputCollapsed ? "h-8" : "h-64"}`}
+            data-testid="output-section"
+          >
+            <button
+              type="button"
+              onClick={() => setOutputCollapsed((prev) => !prev)}
+              className="flex items-center justify-between w-full text-left mb-2 hover:bg-muted/50 rounded px-1 -mx-1"
+              aria-expanded={!outputCollapsed}
+              aria-controls="output-panel-content"
+            >
+              <h2 className="text-sm font-medium text-muted-foreground">
+                {t("output.title", { defaultValue: "Output" })}
+              </h2>
+              {outputCollapsed ? (
+                <ChevronUp className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              )}
+            </button>
+            {!outputCollapsed && (
+              <OutputPanel
+                compileResult={compileResult}
+                currentStep={currentStep}
+                className="flex-1 min-h-0 overflow-auto"
+                visitedGoals={visitedGoals.length}
+                totalGoals={problem.goals.length}
+                byteCount={effectiveBytes ?? 0}
+                onErrorClick={handleErrorClick}
+                id="output-panel-content"
+              />
+            )}
+          </div>
         </div>
       </div>
 

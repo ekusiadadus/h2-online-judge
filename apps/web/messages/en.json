@@ -77,7 +77,13 @@
       "step": "Step",
       "reset": "Reset",
       "speed": "Speed",
-      "path": "Path"
+      "path": "Path",
+      "status": {
+        "ready": "Ready",
+        "running": "Running",
+        "success": "Done",
+        "error": "Error"
+      }
     },
     "output": {
       "title": "Output",
@@ -93,7 +99,14 @@
       "lowerIsBetter": "(lower is better)",
       "points": "Points",
       "successAllTargets": "Success! All targets reached!",
-      "failedTargetsRemaining": "Failed: {count} target(s) remaining"
+      "failedTargetsRemaining": "Failed: {count} target(s) remaining",
+      "tabs": {
+        "console": "Console",
+        "problems": "Problems",
+        "timeline": "Timeline"
+      },
+      "noProblems": "No problems detected",
+      "noTimeline": "No timeline available. Run the code to see execution steps"
     },
     "share": {
       "button": "Share",

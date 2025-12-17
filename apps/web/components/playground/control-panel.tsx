@@ -3,7 +3,9 @@
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Play, Square, StepForward, RotateCcw, Route } from "lucide-react";
+import { Play, Square, StepForward, RotateCcw, Route, CheckCircle, XCircle, Loader2, Circle } from "lucide-react";
+
+export type ExecutionStatus = "ready" | "running" | "success" | "error";
 
 interface ControlPanelProps {
   onRun: () => void;
@@ -20,14 +22,77 @@ interface ControlPanelProps {
   onShowPathChange?: (show: boolean) => void;
   /** Disable interactive controls (e.g., until compiler ready) */
   disabled?: boolean;
+  /** Current execution status for status badge */
+  status?: ExecutionStatus;
+  /** Current step number (for display in running state) */
+  currentStep?: number;
+  /** Maximum steps (for display in running state) */
+  maxSteps?: number;
 }
 
 const SPEED_OPTIONS = [0.5, 1, 2, 4];
 
 /**
+ * Status badge component showing current execution state.
+ */
+function StatusBadge({
+  status,
+  currentStep,
+  maxSteps,
+  t,
+}: {
+  status: ExecutionStatus;
+  currentStep?: number;
+  maxSteps?: number;
+  t: (key: string, options?: { defaultValue?: string }) => string;
+}) {
+  const configs = {
+    ready: {
+      icon: Circle,
+      label: t("status.ready", { defaultValue: "Ready" }),
+      className: "text-muted-foreground bg-muted",
+    },
+    running: {
+      icon: Loader2,
+      label: currentStep !== undefined && maxSteps !== undefined
+        ? `${currentStep}/${maxSteps}`
+        : t("status.running", { defaultValue: "Running" }),
+      className: "text-primary bg-primary/10 border-primary/20",
+      iconClassName: "animate-spin",
+    },
+    success: {
+      icon: CheckCircle,
+      label: t("status.success", { defaultValue: "Done" }),
+      className: "text-success bg-success/10 border-success/20",
+    },
+    error: {
+      icon: XCircle,
+      label: t("status.error", { defaultValue: "Error" }),
+      className: "text-destructive bg-destructive/10 border-destructive/20",
+    },
+  };
+
+  const config = configs[status];
+  const Icon = config.icon;
+
+  return (
+    <div
+      data-testid="status-badge"
+      className={cn(
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border",
+        config.className
+      )}
+    >
+      <Icon className={cn("w-3.5 h-3.5", "iconClassName" in config ? config.iconClassName : "")} />
+      <span>{config.label}</span>
+    </div>
+  );
+}
+
+/**
  * Control panel for playground simulation.
  *
- * Provides buttons for run, step, reset, and speed control.
+ * Provides buttons for run, step, reset, speed control, and status display.
  */
 export function ControlPanel({
   onRun,
@@ -41,6 +106,9 @@ export function ControlPanel({
   showPath = false,
   onShowPathChange,
   disabled = false,
+  status = "ready",
+  currentStep,
+  maxSteps,
 }: ControlPanelProps) {
   const t = useTranslations("playground.controls");
 
@@ -51,6 +119,14 @@ export function ControlPanel({
         className
       )}
     >
+      {/* Status Badge */}
+      <StatusBadge
+        status={status}
+        currentStep={currentStep}
+        maxSteps={maxSteps}
+        t={t}
+      />
+
       {/* Run/Stop button - toggles based on running state */}
       {isRunning && onStop ? (
         <Button onClick={onStop} variant="destructive" size="sm" disabled={disabled}>
