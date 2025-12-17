@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, memo, useCallback } from "react";
+import React, { useMemo, memo, useCallback, useRef, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Program, Problem, Position, Direction } from "@/lib/h2lang/types";
 
@@ -422,26 +422,49 @@ export function Grid({
     return { agentStates: states, pathHistory: paths };
   }, [program, currentStep, gridSize, startPosition, walls]);
 
-  // Calculate total grid pixel size
+  // Calculate total grid pixel size (base size before scaling)
   const gridPixelSize = gridSize * CELL_SIZE;
+
+  // Ref for measuring container width
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  // Calculate scale factor based on container width
+  useEffect(() => {
+    const updateScale = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.clientWidth;
+        // Calculate scale to fit grid in container (with padding accounted for)
+        const newScale = Math.min(1, containerWidth / gridPixelSize);
+        setScale(newScale);
+      }
+    };
+
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, [gridPixelSize]);
 
   return (
     <div
+      ref={containerRef}
       className={cn(
-        "rounded-lg border border-border bg-card p-4 overflow-auto",
+        "w-full rounded-lg border border-border bg-card overflow-hidden",
         className
       )}
     >
-      <div
-        className="relative mx-auto"
-        style={{
-          width: gridPixelSize,
-          height: gridPixelSize,
-          minWidth: gridPixelSize,
-        }}
-        role="img"
-        aria-label="Robot grid"
-      >
+      {/* Aspect ratio container to maintain square shape */}
+      <div className="aspect-square w-full flex items-center justify-center p-2">
+        <div
+          className="relative origin-center"
+          style={{
+            width: gridPixelSize,
+            height: gridPixelSize,
+            transform: `scale(${scale})`,
+          }}
+          role="img"
+          aria-label="Robot grid"
+        >
         {/* Edit mode clickable areas */}
         {editCells}
 
@@ -511,6 +534,7 @@ export function Grid({
             direction={agent.direction}
           />
         ))}
+        </div>
       </div>
     </div>
   );

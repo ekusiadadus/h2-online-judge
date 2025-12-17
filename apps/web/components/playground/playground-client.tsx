@@ -579,8 +579,9 @@ function PlaygroundContent() {
 
 
 
-      {/* Main content area - 2 column layout (Grid | Code+Output) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Main content area - responsive layout */}
+      {/* Mobile: Stack vertically | Desktop: Grid 55/45 split */}
+      <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] xl:grid-cols-[52%_48%] gap-4">
         {/* Left: Grid Visualization */}
         <div className="flex flex-col">
           <h2 className="text-sm font-medium mb-2 text-muted-foreground">
@@ -591,20 +592,23 @@ function PlaygroundContent() {
               </span>
             )}
           </h2>
-          <Grid
-            program={program}
-            currentStep={currentStep}
-            isRunning={isRunning}
-            problem={problem}
-            visitedGoals={visitedGoals}
-            editMode={editMode}
-            onCellClick={handleCellClick}
-            showPath={showPath}
-          />
+          {/* Grid container - max-w to prevent being too large on mobile */}
+          <div className="w-full max-w-[600px] mx-auto lg:mx-0 lg:max-w-none">
+            <Grid
+              program={program}
+              currentStep={currentStep}
+              isRunning={isRunning}
+              problem={problem}
+              visitedGoals={visitedGoals}
+              editMode={editMode}
+              onCellClick={handleCellClick}
+              showPath={showPath}
+            />
+          </div>
         </div>
 
         {/* Right: Code Editor + Output Panel (vertical split like VSCode) */}
-        <div className="flex flex-col min-h-0 lg:h-[700px]">
+        <div className="flex flex-col min-h-0 lg:h-auto">
           {/* Code Editor Section */}
           <div className="flex flex-col flex-1 min-h-0" data-testid="code-section">
             <div className="flex items-center justify-between mb-2">
@@ -633,7 +637,7 @@ function PlaygroundContent() {
               value={code}
               onChange={setCode}
               placeholder={t("editor.placeholder")}
-              className="flex-1 min-h-[200px]"
+              className="flex-1 min-h-[150px] lg:min-h-[200px]"
               disabled={!wasmReady}
             />
           </div>
